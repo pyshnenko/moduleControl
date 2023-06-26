@@ -13,13 +13,15 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.IO.Ports;
+using System.Threading;
+using System.Timers;
 
 namespace WpfApp1
 {
     /// <summary>
     /// Логика взаимодействия для MainWindow.xaml
     /// </summary>
-    ///     
+    ///   
     public partial class MainWindow : Window
     {
         readonly string ver = "0.0.1";
@@ -39,6 +41,8 @@ namespace WpfApp1
                 {
                     portsTotal += ports[i].ToString() + "\n";
                 }
+            readPort.ItemsSource = ports;
+            writePort.ItemsSource = ports;
             textField.Text = portsTotal;
             azTextBox.Text = state.getAzAngleText();
             incTextBox.Text = state.getIncAngleText();
@@ -52,6 +56,7 @@ namespace WpfApp1
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             textField.Text += "Hello world";
+            state.sendMessage("Hello");
         }
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
@@ -101,6 +106,42 @@ namespace WpfApp1
                 angleBox.IsEnabled = false;
                 groupBox.IsEnabled = state.connsectionGet();
             }
+        }
+        private void readPort_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            port = new SerialPort();
+            try
+            {
+                if (port != null) port.Close();
+            }
+            catch
+            {
+                textField.Text += "Нет портов\n";
+            }
+            try
+            {
+                port.PortName = "COM1";
+                port.BaudRate = 9600;
+                port.DataBits = 8;
+                port.Parity = System.IO.Ports.Parity.None;
+                port.StopBits = System.IO.Ports.StopBits.One;
+                port.ReadTimeout = 1000;
+                port.WriteTimeout = 1000; 
+                port.DataReceived += new SerialDataReceivedEventHandler(port_DataReceived);
+                port.Open(); 
+                state.setReadPort(port);
+            }
+            catch (Exception err)
+            {
+                textField.Text += ("ERROR: невозможно открыть порт:" + err.ToString() +"\n");
+                return;
+            }
+        }
+        private void port_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            // Show all the incoming data in the port's buffer;
+            SerialPort port = state.getPort();
+            textField.Text += (port.ReadExisting()) + "\n";
         }
     }
 }

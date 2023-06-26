@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.Ports;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,12 +12,13 @@ namespace WpfApp1
     {
         private bool connectState = false;
         private int azAngle = 324123;
-        private int incAngle = 324000;
+        private int incAngle = 0;
         private bool azMeasUni = false;
         private bool incMeasUni = false;
         private bool azMeasDec = false;
         private bool incMeasDec = false;
         private bool manualState = false;
+        private SerialPort readPort = null;
 
         public antennaState() { }
         public antennaState(string azMeas, string incMeas)
@@ -25,6 +28,21 @@ namespace WpfApp1
             if (incMeas == "Код") incMeasDec = true;
             if (azMeas == "Значение") azMeasUni = true;
             if (incMeas == "Значение") incMeasUni = true;
+        }
+
+        public void setReadPort(SerialPort port)
+        {
+            readPort = port;
+        }
+
+        public void sendMessage(string mess)
+        {
+            readPort.Write(mess);
+        }
+
+        public SerialPort getPort()
+        {
+            return readPort;
         }
 
         public bool setManualState(bool state)

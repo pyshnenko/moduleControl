@@ -45,7 +45,7 @@
         <GroupBox x:Name="mechBox" Header="Порт" Height="50" Width="420" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="10, 30" IsEnabled="True">
             <Grid>
                 <Label VerticalAlignment="Top" HorizontalAlignment="Left">Порт угла</Label>
-                <ComboBox x:Name="readPort" VerticalAlignment="Top" HorizontalAlignment="Left" Width="80" Margin="65,0" />
+                <ComboBox x:Name="readPort" HorizontalAlignment="Left" Width="80" Margin="65,0,0,5" SelectionChanged="readPort_SelectionChanged" />
                 <Label VerticalAlignment="Top" HorizontalAlignment="Left" Width="85" Margin="150,0,0,0">Порт уставки</Label>
                 <ComboBox x:Name="writePort" VerticalAlignment="Top" HorizontalAlignment="Left" Width="80" Height="25" Margin="240,0,0,0" />
                 <Button Height="25" Width="65" VerticalAlignment="Top" HorizontalAlignment="Right">Автопоиск</Button>
