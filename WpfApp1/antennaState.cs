@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace WpfApp1
 {
@@ -18,7 +19,12 @@ namespace WpfApp1
         private bool azMeasDec = false;
         private bool incMeasDec = false;
         private bool manualState = false;
+        private int manualAzAngle = 0;
+        private int manualIncAngle = 0;
+        private int ustAz = 0;
+        private int ustInc = 0;
         private SerialPort readPort = null;
+        TextBox text = null;
 
         public antennaState() { }
         public antennaState(string azMeas, string incMeas)
@@ -28,6 +34,28 @@ namespace WpfApp1
             if (incMeas == "Код") incMeasDec = true;
             if (azMeas == "Значение") azMeasUni = true;
             if (incMeas == "Значение") incMeasUni = true;
+        }
+
+        public void setManualAzAngle(int val)
+        { manualAzAngle = val; }
+        public void setManualIncAngle(int val)
+        { manualIncAngle = val; }
+
+        public int getManualAzAngle() {  return manualAzAngle; }
+        public int getManualIncAngle() { return manualIncAngle; }
+
+        public void setUstAz(int val) { ustAz = val;}
+        public void setUstInc(int val) { ustInc = val; }
+        public int getUstAz() { return ustAz; }
+        public int getUstInc() { return ustInc; }
+        public void setTextBox(TextBox text)
+        {
+            this.text = text;
+        }
+
+        public TextBox getTextBox()
+        {
+            return text;
         }
 
         public void setReadPort(SerialPort port)

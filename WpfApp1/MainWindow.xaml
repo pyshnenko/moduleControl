@@ -11,9 +11,6 @@
             <MenuItem Header="Файл">
                 <MenuItem Header="Выход" Click="Exit_Click"/>
             </MenuItem>
-            <MenuItem Header="Настройки">
-                <MenuItem Header="Выбрать порт" />
-            </MenuItem>
             <MenuItem Header="О программе">
                 <MenuItem Header="Версия" Click="Version_Click" />
             </MenuItem>
@@ -35,17 +32,17 @@
                     <TextBlock>Значение</TextBlock>
                 </ComboBox>
                 <Label Height="25" Width="100" Margin="10, 65, 0, 0" VerticalAlignment="Top" HorizontalAlignment="Left">Уставка азимут</Label>
-                <TextBox Height="25" Width="80" Margin="120, 65, 0, 0" VerticalAlignment="Top" HorizontalAlignment="Left" />
-                <Button Height="25" Width="80" Margin="220, 65, 0, 0" VerticalAlignment="Top" HorizontalAlignment="Left" >Подать</Button>
+                <TextBox x:Name="ustAz" Height="25" Width="80" Margin="120, 65, 0, 0" VerticalAlignment="Top" HorizontalAlignment="Left" />
+                <Button Height="25" Width="80" Margin="220, 65, 0, 0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_Click_1" >Подать</Button>
                 <Label Height="25" Width="100" Margin="10,95,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">Уставка наклон</Label>
-                <TextBox Height="25" Width="80" Margin="120, 95, 0, 0" VerticalAlignment="Top" HorizontalAlignment="Left" />
-                <Button Height="25" Width="80" Margin="220, 95, 0, 0" VerticalAlignment="Top" HorizontalAlignment="Left" >Подать</Button>
+                <TextBox x:Name="ustInc" Height="25" Width="80" Margin="120, 95, 0, 0" VerticalAlignment="Top" HorizontalAlignment="Left" />
+                <Button Height="25" Width="80" Margin="220, 95, 0, 0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_Click_2" >Подать</Button>
             </Grid>
         </GroupBox>
         <GroupBox x:Name="mechBox" Header="Порт" Height="50" Width="420" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="10, 30" IsEnabled="True">
             <Grid>
                 <Label VerticalAlignment="Top" HorizontalAlignment="Left">Порт угла</Label>
-                <ComboBox x:Name="readPort" HorizontalAlignment="Left" Width="80" Margin="65,0,0,5" SelectionChanged="readPort_SelectionChanged" />
+                <ComboBox x:Name="readPort" HorizontalAlignment="Left" Width="80" Margin="65,0,0,0" SelectionChanged="readPort_SelectionChanged" Height="22" VerticalAlignment="Top" />
                 <Label VerticalAlignment="Top" HorizontalAlignment="Left" Width="85" Margin="150,0,0,0">Порт уставки</Label>
                 <ComboBox x:Name="writePort" VerticalAlignment="Top" HorizontalAlignment="Left" Width="80" Height="25" Margin="240,0,0,0" />
                 <Button Height="25" Width="65" VerticalAlignment="Top" HorizontalAlignment="Right">Автопоиск</Button>
@@ -67,11 +64,11 @@
             <Grid>
                 <TextBox x:Name="manualAzAngle" VerticalAlignment="Top" HorizontalAlignment="Left" Width="75" Margin="5,5,0,0"></TextBox>
                 <TextBox x:Name="manualIncAngle" VerticalAlignment="Top" HorizontalAlignment="Left" Width="75" Margin="5, 35,0,0"></TextBox>
-                <Button VerticalAlignment="Top" HorizontalAlignment="Right" Height="25" Width="130" Margin="0, 0,5,0">Установка азимута</Button>
-                <Button VerticalAlignment="Top" HorizontalAlignment="Right" Height="25" Width="130" Margin="0, 30,5,0">Установка наклона</Button>
+                <Button VerticalAlignment="Bottom" HorizontalAlignment="Right" Height="25" Width="130" Margin="0,0,5,32" Click="Button_Click_3">Установка азимута</Button>
+                <Button VerticalAlignment="Top" HorizontalAlignment="Right" Height="25" Width="130" Margin="0, 30,5,0" Click="Button_Click_4">Установка наклона</Button>
             </Grid>
         </GroupBox>
-        <TabControl x:Name="tabControl" Width="780" Height="300" VerticalAlignment="Top" Margin="5, 200,0,0">
+        <TabControl x:Name="tabControl" Width="780" Height="300" VerticalAlignment="Top" Margin="5, 200,5,0">
             <TabItem Header="Состояние">
                 <Grid Background="#FFE5E5E5">
                     <Grid.ColumnDefinitions>
