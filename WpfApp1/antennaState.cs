@@ -23,6 +23,11 @@ namespace WpfApp1
         private int manualIncAngle = 0;
         private int ustAz = 0;
         private int ustInc = 0;
+        private string workMode = "";
+        private int needAzAngle = 0;
+        private int needIncAngle = 0;
+        private long lastAzTime = 0;
+        private long lastIncTime = 0;
         private SerialPort readPort = null;
         TextBox text = null;
 
@@ -35,44 +40,29 @@ namespace WpfApp1
             if (azMeas == "Значение") azMeasUni = true;
             if (incMeas == "Значение") incMeasUni = true;
         }
-
-        public void setManualAzAngle(int val)
-        { manualAzAngle = val; }
-        public void setManualIncAngle(int val)
-        { manualIncAngle = val; }
-
+        public void setLastAzTime(long val) { lastAzTime = val; }
+        public void setLastIncTime(long val) { lastIncTime = val; }
+        public long getLastAzTime() { return lastAzTime; }
+        public long getLastIncTime() { return needIncAngle; }
+        public void setNeedAzAngle(int val) { needAzAngle = val; }
+        public void setNeedIncAngle(int val) { needIncAngle = val; }
+        public int getNeedAzAngle() { return needAzAngle; }
+        public int getNeedIncAngle() { return needIncAngle; }
+        public void setWorkMode(string workMode) { this.workMode = workMode; }
+        public string getWorkMode() { return workMode; }
+        public void setManualAzAngle(int val) { manualAzAngle = val; }
+        public void setManualIncAngle(int val) { manualIncAngle = val; }
         public int getManualAzAngle() {  return manualAzAngle; }
         public int getManualIncAngle() { return manualIncAngle; }
-
         public void setUstAz(int val) { ustAz = val;}
         public void setUstInc(int val) { ustInc = val; }
         public int getUstAz() { return ustAz; }
         public int getUstInc() { return ustInc; }
-        public void setTextBox(TextBox text)
-        {
-            this.text = text;
-        }
-
-        public TextBox getTextBox()
-        {
-            return text;
-        }
-
-        public void setReadPort(SerialPort port)
-        {
-            readPort = port;
-        }
-
-        public void sendMessage(string mess)
-        {
-            readPort.Write(mess);
-        }
-
-        public SerialPort getPort()
-        {
-            return readPort;
-        }
-
+        public void setTextBox(TextBox text) { this.text = text; }
+        public TextBox getTextBox() { return text; }
+        public void setReadPort(SerialPort port) { readPort = port; }
+        public void sendMessage(string mess) { readPort.Write(mess); }
+        public SerialPort getPort() { return readPort; }
         public bool setManualState(bool state)
         {
             manualState = state;
@@ -186,7 +176,7 @@ namespace WpfApp1
             string buf = "";
             StringBuilder bBuf = new StringBuilder(buf);
             int i =  0;
-            int bufAngle = angle;
+            int bufAngle = Math.Abs(angle);
             while (bufAngle > 1)
             {
                 bBuf.Insert(0, (bufAngle % 2).ToString());
@@ -201,8 +191,8 @@ namespace WpfApp1
         private string intToAng (int angle)
         {
             int extGrad = (int)(angle/3600);
-            int extMin = (int)(angle%3600 / 60);
-            int extSeck = (int)(angle % 60);
+            int extMin = (int)((Math.Abs(angle))%3600 / 60);
+            int extSeck = (int)((Math.Abs(angle)) % 60);
             return extGrad + "º" + extMin + "'" + extSeck + "\"";
         }
     }

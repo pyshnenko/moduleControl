@@ -60,9 +60,9 @@ namespace WpfApp1
          0xef1f,0xff3e,0xcf5d,0xdf7c,0xaf9b,0xbfba,0x8fd9,0x9ff8,
          0x6e17,0x7e36,0x4e55,0x5e74,0x2e93,0x3eb2,0x0ed1,0x1ef0
       };
-        readonly static byte SYNC = (byte)0xAA;
-        readonly static byte Packet_size = (byte)14;
-        readonly static byte Mask = (byte)0x32;
+        readonly static byte SYNC = (byte)0xAA; //Байт синхронизации (1010
+        readonly static byte Packet_size = (byte)14; //Размер пакета
+        readonly static byte Mask = (byte)0x32; 
         readonly static byte ID = (byte)0x01;
         static ushort CrcCalc = (byte)0;
 
@@ -70,6 +70,15 @@ namespace WpfApp1
         static int Register_Universal_input = 34;
         static int Register_sensored_position = 32;
         static int Register_sensored_velocity = 31;
+
+        readonly static int progonSpeedAz = 25; //Скорость прогона по азимуту
+        readonly static int progonSpeedInc = 25; //Скорость прогона по наклону
+        readonly static int creetAngleAzP = 90; //Допустимый угол поворота по азимуту (положительный)
+        readonly static int creetAngleAzN = -90; //Допустимый угол поворота по азимуту (отрицательный)
+        readonly static int creetAngleIncP = 10; //Допустимый угол поворота по азимуту (положительный)
+        readonly static int creetAngleIncN = -30; //Допустимый угол поворота по азимуту (отрицательный)
+
+        readonly static int commandDelay = 2000; //Задержка выдачи команд в модуль
 
         readonly string ver = "0.0.1";
         antennaState state = new antennaState();
@@ -81,17 +90,7 @@ namespace WpfApp1
             azMeas.SelectedIndex = 0;
             incMeas.SelectedIndex = 0;
             state.connectionSet(false);
-            string[] ports = SerialPort.GetPortNames();
-            string portsTotal = "";
-            if (ports.Length == 0) portsTotal = "no com\n";
-            else 
-                for (int i =0; i < ports.Length; i++)
-                {
-                    portsTotal += ports[i].ToString() + "\n";
-                }
-            readPort.ItemsSource = ports;
-            writePort.ItemsSource = ports;
-            textField.Text = portsTotal;
+            Update_ports_func();
             azTextBox.Text = state.getAzAngleText();
             incTextBox.Text = state.getIncAngleText();
             groupBox.IsEnabled = state.connsectionGet();
@@ -102,11 +101,12 @@ namespace WpfApp1
             state.setTextBox(textField);
             manualAzAngle.Text = "0";
             manualIncAngle.Text = "0";
+            state.setWorkMode("zero");
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            textField.Text += "Hello world";
+            println("Hello world");
             state.sendMessage("Hello");
         }
         private void Exit_Click(object sender, RoutedEventArgs e)
@@ -145,6 +145,7 @@ namespace WpfApp1
 
         private void manualSwitch_Click(object sender, RoutedEventArgs e)
         {
+            state.setWorkMode("zero");
             bool manualState = state.getManualState();
             manualState = state.setManualState(!manualState);
             if (manualState)
@@ -169,38 +170,89 @@ namespace WpfApp1
             }
             catch
             {
-                textField.Text += "Нет портов\n";
+                println("Нет портов");
             }
             try
             {
-                readPortC.PortName = "COM1";
-                readPortC.BaudRate = 9600;
-                readPortC.DataBits = 8;
-                readPortC.Parity = System.IO.Ports.Parity.None;
-                readPortC.StopBits = System.IO.Ports.StopBits.One;
-                readPortC.ReadTimeout = 1000;
-                readPortC.WriteTimeout = 1000; 
-                readPortC.DataReceived += new SerialDataReceivedEventHandler(port_DataReceived);
-                readPortC.Open(); 
-                state.setReadPort(readPortC);
-                aTimer = new System.Timers.Timer();
-                aTimer.Interval = 2000;
-                aTimer.Elapsed += OnTimedEvent;
-                aTimer.AutoReset = true;
-                aTimer.Enabled = true;
-                state.connectionSet(true);
-                groupBox.IsEnabled = state.connsectionGet();
-                tabControl.IsEnabled = state.connsectionGet();
-                modeBox.IsEnabled = state.connsectionGet();
-                angleBox.IsEnabled = state.getManualState();
-                manualSwitch.IsEnabled = state.connsectionGet();
-                writePortC = readPortC;
+                if (writePort.SelectedItem == readPort.SelectedItem) readPortC = writePortC;
+                else
+                {
+                    readPortC.PortName = readPort.SelectedItem.ToString();
+                    readPortC.BaudRate = 3000000;
+                    readPortC.DataBits = 8;
+                    readPortC.Parity = System.IO.Ports.Parity.None;
+                    readPortC.StopBits = System.IO.Ports.StopBits.One;
+                    readPortC.ReadTimeout = 200;
+                    readPortC.WriteTimeout = 1000;
+                    readPortC.DataReceived += new SerialDataReceivedEventHandler(port_DataReceived);
+                    readPortC.Open();
+                    state.setReadPort(readPortC);
+                }
+                if (writePortC != null && readPortC != null)
+                {
+                    start();
+                }
             }
             catch (Exception err)
             {
-                textField.Text += ("ERROR: невозможно открыть порт:" + err.ToString() +"\n");
+                println("ERROR: невозможно открыть порт:" + err.ToString());
                 return;
             }
+        }
+
+        private void writePort_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            writePortC = new SerialPort();
+            try
+            {
+                writePortC?.Close();
+            }
+            catch
+            {
+                println("Нет портов");
+            }
+            try
+            {
+                if (writePort.SelectedItem == readPort.SelectedItem) writePortC = readPortC;
+                else
+                {
+                    writePortC.PortName = writePort.SelectedItem.ToString();
+                    writePortC.BaudRate = 3000000;
+                    writePortC.DataBits = 8;
+                    writePortC.Parity = System.IO.Ports.Parity.None;
+                    writePortC.StopBits = System.IO.Ports.StopBits.One;
+                    writePortC.ReadTimeout = 200;
+                    writePortC.WriteTimeout = 1000;
+                    writePortC.DataReceived += new SerialDataReceivedEventHandler(port_DataReceived);
+                    writePortC.Open();
+                }
+                if (writePortC != null && readPortC != null)
+                {
+                    start();
+                }
+            }
+            catch (Exception err)
+            {
+                println("ERROR: невозможно открыть порт:" + err.ToString());
+                return;
+            }
+        }
+
+        private void start()
+        {
+            aTimer?.Stop();
+            aTimer = new System.Timers.Timer();
+            aTimer.Interval = commandDelay;
+            aTimer.Elapsed += OnTimedEvent;
+            aTimer.AutoReset = true;
+            aTimer.Enabled = true;
+            state.connectionSet(true);
+            groupBox.IsEnabled = state.connsectionGet();
+            tabControl.IsEnabled = state.connsectionGet();
+            modeBox.IsEnabled = state.connsectionGet();
+            angleBox.IsEnabled = state.getManualState();
+            manualSwitch.IsEnabled = state.connsectionGet();
+            upd_port_button.IsEnabled = !state.connsectionGet();
         }
         private void port_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
@@ -218,31 +270,41 @@ namespace WpfApp1
                         bData = (byte)readPortC.ReadByte();
                     }catch
                     {
-                        textField.Text += "end";
+                        print("end");
+                        break;
                     }
                     data[i] = bData;
-                    textField.Text += bData.ToString() + " ";
+                    print(bData.ToString() + " ");
                 }
                 if ((int)data[9] == Register_sensored_position)
                 {
-                    textField.Text += "im here";
                     int p1 = 0;
                     p1 = data[11] << 8;
                     p1 = (p1 + data[12]) << 8;
                     p1 = (p1 + data[13]) << 8;
                     p1 = (p1 + data[14]);
+                    if (data[10] != 0) p1 *= (-1);
+                    long time = DateTime.Now.Ticks;
+                    if (state.getLastAzTime()!=0) println("az speed: " + ((int)((state.getAzAngle() - p1)*1000/(time - state.getLastAzTime()))).ToString());
+                    state.setLastAzTime(time);
                     state.setAzAngle("", p1);
                     azTextBox.Text = state.getAzAngleText();
                 }
                 if (((int)data[23] == Register_sensored_position))
                 {
+                    print("im here inc");
                     int p1 = 0;
                     p1 = data[25] << 8;
                     p1 = (p1 + data[26]) << 8;
-                    p1 = (p1 + data[27]) << 8;
-                    textField.Text += p1.ToString() + " ";
+                    p1 = (p1 + data[27]);
+                    if (data[24] != 0) p1 *= (-1);
+                    long time = DateTime.Now.Ticks;
+                    if (state.getLastIncTime() != 0) println("inc speed: " + ((int)((state.getIncAngle() - p1)*1000/ (time - state.getLastIncTime()))).ToString());
+                    state.setLastIncTime(time);
+                    state.setIncAngle("", p1);
+                    incTextBox.Text = state.getIncAngleText();
                 }
-                textField.Text += "\n";
+                println("");
             }));
         }
         private void OnTimedEvent(Object source, System.Timers.ElapsedEventArgs e)
@@ -257,19 +319,70 @@ namespace WpfApp1
                     if (inc > 1024) inc = 1024;
                     if (az < -1024) az = -1024;
                     if (inc < -1024) inc = -1024;
-                    textField.Text += az.ToString() + "   ";
-                    textField.Text += inc.ToString() + "\n";
-                    /*writePortC.Write("az: " + az.ToString() + "   ");
-                    writePortC.Write("inc: " + inc.ToString() + "\n");*/
+                    print(az.ToString() + "   ");
+                    println(inc.ToString());
                     Packet_command_registers_constructor(1, 5, az);
                 }
                 else
                 {
-                    textField.Text += state.getUstAz().ToString() + "   ";
-                    textField.Text += state.getUstInc().ToString() + "\n";
-                    /*writePortC.Write("az: " + state.getUstAz().ToString() + "   ");
-                    writePortC.Write("inc: " + state.getUstInc().ToString() + "\n");*/
+                    switch (state.getWorkMode())
+                    {
+                        case "zero":
+                            println(state.getWorkMode());
+                            int az = (-state.getAzAngle()) / 158;
+                            int inc = (-state.getIncAngle()) / 158;
+                            if (az > 1024) az = 1024;
+                            if (inc > 1024) inc = 1024;
+                            if (az < -1024) az = -1024;
+                            if (inc < -1024) inc = -1024;
+                            state.setUstAz(az);
+                            state.setUstInc(inc);
+                            break;
+
+                        case "progon":
+                            println(state.getWorkMode());
+                            if (state.getNeedAzAngle()<0) 
+                            {
+                                if (state.getAzAngle() < (creetAngleAzN + 5)*3600)
+                                {
+                                    state.setNeedAzAngle( creetAngleAzP * 3600);
+                                    state.setUstAz(0);
+                                }
+                                else state.setUstAz(-progonSpeedAz);
+                            }
+                            else
+                            {
+                                if (state.getAzAngle() > (creetAngleAzP - 5) * 3600)
+                                {
+                                    state.setNeedAzAngle(creetAngleAzN * 3600);
+                                    state.setUstAz(0);
+                                }
+                                else state.setUstAz(progonSpeedAz);
+                            }
+                            if (state.getNeedIncAngle() < 0)
+                            {
+                                if (state.getIncAngle() < (creetAngleIncN + 5) * 3600)
+                                {
+                                    state.setNeedIncAngle(creetAngleIncP * 3600);
+                                    state.setUstInc(0);
+                                }
+                                else state.setUstInc(-progonSpeedInc);
+                            }
+                            else
+                            {
+                                if (state.getIncAngle() > (creetAngleIncP - 5) * 3600)
+                                {
+                                    state.setNeedIncAngle(creetAngleIncN * 3600);
+                                    state.setUstInc(0);
+                                }
+                                else state.setUstInc(progonSpeedInc);
+                            }
+                            break;
+                    }
+                    print(state.getUstAz().ToString() + "   ");
+                    println(state.getUstInc().ToString());
                     Packet_command_registers_constructor(1, 5, state.getUstAz());
+                    Packet_command_registers_constructor(1, 2, state.getUstInc());
                 }
             }));
         }
@@ -352,7 +465,8 @@ namespace WpfApp1
             Transmitted_data[Packet_size + 1] = Crc_high;
             Transmitted_data[Packet_size + 2] = Crc_low;
 
-            writePortC.Write(Transmitted_data, 0, 17);
+            try { writePortC.Write(Transmitted_data, 0, 17); }
+            catch { println("Порт уставки закрыт или отключен"); };
         }
         ushort add_CRC(ushort fcs, byte c)
         {
@@ -386,6 +500,12 @@ namespace WpfApp1
             }
             return crc;
         }
+
+        private void Clear_Click(object sender, RoutedEventArgs e)
+        {
+            textField.Text = "";
+        }
+
         public static ushort crc16_ccitt(byte[] buf)
         {
             ushort crc = 0;
@@ -394,6 +514,57 @@ namespace WpfApp1
                 crc = (ushort)(crc16tab[(crc >> 8) & 0x00FF] ^ (crc << 8) ^ buf[counter]);
             }
             return crc;
+        }
+
+        private void println(string text)
+        {
+            textFieldUpd(text + "\n");
+        }
+        private void print(string text)
+        {
+            textFieldUpd(text);
+        }
+
+        private void Update_ports(object sender, RoutedEventArgs e)
+        {
+            Update_ports_func();
+        }
+
+        private void textFieldUpd(string text)
+        {
+            if (textField.Text.Length <1000)
+                textField.Text += text;
+            else
+            {
+                string textp = textField.Text + text;
+                textField.Text = textp.Substring(textp.Length - 1000);
+            }
+            textField.ScrollToEnd();
+        }
+
+        private void Button_Click_5(object sender, RoutedEventArgs e)
+        {
+            progon.Content = state.getWorkMode() == "progon" ? "Прогон" : "Стоп" ;
+            state.setWorkMode(state.getWorkMode() == "progon" ? "zero" : "progon");
+            if (state.getWorkMode() == "progon")
+            {
+                state.setNeedAzAngle(creetAngleAzN * 3600);
+                state.setNeedIncAngle(creetAngleIncN * 3600);
+            }
+        }
+
+        private void Update_ports_func()
+        {
+            string[] ports = SerialPort.GetPortNames();
+            string portsTotal = "";
+            if (ports.Length == 0) portsTotal = "no com\n";
+            else
+                for (int i = 0; i < ports.Length; i++)
+                {
+                    portsTotal += ports[i].ToString() + "\n";
+                }
+            readPort.ItemsSource = ports;
+            writePort.ItemsSource = ports;
         }
     }
 }

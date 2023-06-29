@@ -44,8 +44,8 @@
                 <Label VerticalAlignment="Top" HorizontalAlignment="Left">Порт угла</Label>
                 <ComboBox x:Name="readPort" HorizontalAlignment="Left" Width="80" Margin="65,0,0,0" SelectionChanged="readPort_SelectionChanged" Height="22" VerticalAlignment="Top" />
                 <Label VerticalAlignment="Top" HorizontalAlignment="Left" Width="85" Margin="150,0,0,0">Порт уставки</Label>
-                <ComboBox x:Name="writePort" VerticalAlignment="Top" HorizontalAlignment="Left" Width="80" Height="25" Margin="240,0,0,0" />
-                <Button Height="25" Width="65" VerticalAlignment="Top" HorizontalAlignment="Right">Автопоиск</Button>
+                <ComboBox x:Name="writePort" HorizontalAlignment="Left" Width="80" Margin="240,0,0,2" SelectionChanged="writePort_SelectionChanged" />
+                <Button Height="25" Width="65" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="343,0,0,0" Click="Update_ports" x:Name="upd_port_button">Обновить</Button>
             </Grid>
         </GroupBox>
         <GroupBox x:Name="modeBox" Header="Режим" Height="125" Width="170" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="260, 80">
@@ -56,7 +56,7 @@
                     </TextBlock>
                 </Button>
                 <Button Height="25" Width="150" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5,45,0,0">Проверка</Button>
-                <Button Height="25" Width="150" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5,75,0,0">Прогон</Button>
+                <Button Height="25" Width="150" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5,75,0,0" Click="Button_Click_5" x:Name="progon">Прогон</Button>
             </Grid>
         </GroupBox>
         <Button x:Name="manualSwitch" VerticalAlignment="Top" HorizontalAlignment="Right" Width="240" Height="25" Margin="0,90,10,0" Click="manualSwitch_Click">Перейти в режим отработки угла</Button>
@@ -77,7 +77,7 @@
                         <ColumnDefinition Width="75*"/>
                         <ColumnDefinition Width="211*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBox x:Name="textField" Margin="5,5,5,5" Grid.ColumnSpan="4"/>
+                    <TextBox x:Name="textField" Margin="5,5,5,5" Grid.ColumnSpan="4" VerticalScrollBarVisibility="Visible" IsReadOnly="True"/>
                 </Grid>
             </TabItem>
             <TabItem Header="График">
@@ -87,6 +87,7 @@
                 <Grid Background="#FFE5E5E5"/>
             </TabItem>
         </TabControl>
+        <Button Height="25" Width="100" Click="Clear_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="280, 20" >Очистить</Button>
         <Button Height="25" Width="100" Click="Button_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="150, 20" >Тест</Button>
         <Button Height="25" Width="100" Click="Exit_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20" >Закрыть</Button>
     </Grid>
