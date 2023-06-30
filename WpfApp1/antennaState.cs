@@ -9,7 +9,7 @@ using System.Windows.Controls;
 
 namespace WpfApp1
 {
-    internal class antennaState
+    public class antennaState
     {
         private bool connectState = false;
         private int azAngle = 324123;
@@ -23,11 +23,12 @@ namespace WpfApp1
         private int manualIncAngle = 0;
         private int ustAz = 0;
         private int ustInc = 0;
-        private string workMode = "";
+        private CheckedParameters.NowWork workMode;
         private int needAzAngle = 0;
         private int needIncAngle = 0;
         private long lastAzTime = 0;
         private long lastIncTime = 0;
+        private CheckedParameters pars;
         private SerialPort readPort = null;
         TextBox text = null;
 
@@ -40,16 +41,18 @@ namespace WpfApp1
             if (azMeas == "Значение") azMeasUni = true;
             if (incMeas == "Значение") incMeasUni = true;
         }
+        public void SetCheckedParameters(CheckedParameters pars) { this.pars = pars; }
+        public CheckedParameters GetCheckedParameters() { return pars; }
         public void setLastAzTime(long val) { lastAzTime = val; }
         public void setLastIncTime(long val) { lastIncTime = val; }
         public long getLastAzTime() { return lastAzTime; }
-        public long getLastIncTime() { return needIncAngle; }
+        public long getLastIncTime() { return lastIncTime; }
         public void setNeedAzAngle(int val) { needAzAngle = val; }
         public void setNeedIncAngle(int val) { needIncAngle = val; }
         public int getNeedAzAngle() { return needAzAngle; }
         public int getNeedIncAngle() { return needIncAngle; }
-        public void setWorkMode(string workMode) { this.workMode = workMode; }
-        public string getWorkMode() { return workMode; }
+        public void setWorkMode(CheckedParameters.NowWork workMode) { this.workMode = workMode; }
+        public CheckedParameters.NowWork getWorkMode() { return workMode; }
         public void setManualAzAngle(int val) { manualAzAngle = val; }
         public void setManualIncAngle(int val) { manualIncAngle = val; }
         public int getManualAzAngle() {  return manualAzAngle; }

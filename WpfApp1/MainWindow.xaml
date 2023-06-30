@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
-        Title="Программа контроля параметров блока" Height="600" Width="800">
+        Title="Программа контроля параметров блока" Height="600" Width="800"
+        Closing="on_close">
     <Grid>
         <Menu x:Name="menu" Height="20" VerticalAlignment="Top">
             <MenuItem Header="Файл">
@@ -45,12 +46,12 @@
                 <ComboBox x:Name="readPort" HorizontalAlignment="Left" Width="80" Margin="65,0,0,0" SelectionChanged="readPort_SelectionChanged" Height="22" VerticalAlignment="Top" />
                 <Label VerticalAlignment="Top" HorizontalAlignment="Left" Width="85" Margin="150,0,0,0">Порт уставки</Label>
                 <ComboBox x:Name="writePort" HorizontalAlignment="Left" Width="80" Margin="240,0,0,2" SelectionChanged="writePort_SelectionChanged" />
-                <Button Height="25" Width="65" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="343,0,0,0" Click="Update_ports" x:Name="upd_port_button">Обновить</Button>
+                <Button Width="65" HorizontalAlignment="Left" Margin="343,0,0,2" Click="Update_ports" x:Name="upd_port_button">Обновить</Button>
             </Grid>
         </GroupBox>
         <GroupBox x:Name="modeBox" Header="Режим" Height="125" Width="170" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="260, 80">
             <Grid>
-                <Button Height="40" Width="150" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5, 0, 0, 0">
+                <Button Height="40" Width="150" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5, 0, 0, 0" Click="Open_props_window">
                     <TextBlock TextAlignment="Center">
                         Выбрать параметры<LineBreak/>для проверки
                     </TextBlock>
