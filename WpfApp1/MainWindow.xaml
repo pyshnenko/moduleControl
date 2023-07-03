@@ -43,7 +43,7 @@
         <GroupBox x:Name="mechBox" Header="Порт" Height="50" Width="420" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="10, 30" IsEnabled="True">
             <Grid>
                 <Label VerticalAlignment="Top" HorizontalAlignment="Left">Порт угла</Label>
-                <ComboBox x:Name="readPort" HorizontalAlignment="Left" Width="80" Margin="65,0,0,0" SelectionChanged="readPort_SelectionChanged" Height="22" VerticalAlignment="Top" />
+                <ComboBox x:Name="readPort" HorizontalAlignment="Left" Width="80" Margin="65,0,0,5" SelectionChanged="readPort_SelectionChanged" />
                 <Label VerticalAlignment="Top" HorizontalAlignment="Left" Width="85" Margin="150,0,0,0">Порт уставки</Label>
                 <ComboBox x:Name="writePort" HorizontalAlignment="Left" Width="80" Margin="240,0,0,2" SelectionChanged="writePort_SelectionChanged" />
                 <Button Width="65" HorizontalAlignment="Left" Margin="343,0,0,2" Click="Update_ports" x:Name="upd_port_button">Обновить</Button>
@@ -56,7 +56,7 @@
                         Выбрать параметры<LineBreak/>для проверки
                     </TextBlock>
                 </Button>
-                <Button Height="25" Width="150" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5,45,0,0">Проверка</Button>
+                <Button Height="25" Width="150" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5,45,0,0" Click="start_click" x:Name="check_start">Проверка</Button>
                 <Button Height="25" Width="150" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5,75,0,0" Click="Button_Click_5" x:Name="progon">Прогон</Button>
             </Grid>
         </GroupBox>

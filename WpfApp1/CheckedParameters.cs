@@ -10,8 +10,8 @@ namespace WpfApp1
     {
         private static readonly string[] workMode = new string[6] { "naprTrogan", "kPered", "maxSpeed", "minLength", "progon", "zero" };
         private static readonly bool[] mode = new bool[6];
-        private readonly bool az;
-        private readonly bool inc;
+        public readonly bool az;
+        public readonly bool inc;
 
         public struct NowWork 
         {
@@ -68,6 +68,11 @@ namespace WpfApp1
             while (!mode[index]) index++;
             NowWork exData = new NowWork( az && inc ? workMode[index] : "zero", az == true);
             return exData;
+        }
+
+        public NowWork ZeroMode() {
+            NowWork zeroMode = new NowWork("zero", true);
+            return zeroMode;
         }
     }
 }

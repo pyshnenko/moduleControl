@@ -42,7 +42,7 @@ namespace WpfApp1
                     inc.IsChecked == true
                 );
             state.SetCheckedParameters( pars );
-            state.setWorkMode(pars.FirstStart());
+            //state.setWorkMode(pars.FirstStart());
             Hide();
         }
     }

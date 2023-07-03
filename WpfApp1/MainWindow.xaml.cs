@@ -188,7 +188,7 @@ namespace WpfApp1
                     readPortC.Parity = System.IO.Ports.Parity.None;
                     readPortC.StopBits = System.IO.Ports.StopBits.One;
                     readPortC.ReadTimeout = 200;
-                    readPortC.WriteTimeout = 1000;
+                    readPortC.WriteTimeout = 200;
                     readPortC.DataReceived += new SerialDataReceivedEventHandler(port_DataReceived);
                     readPortC.Open();
                     state.setReadPort(readPortC);
@@ -227,7 +227,7 @@ namespace WpfApp1
                     writePortC.Parity = System.IO.Ports.Parity.None;
                     writePortC.StopBits = System.IO.Ports.StopBits.One;
                     writePortC.ReadTimeout = 200;
-                    writePortC.WriteTimeout = 1000;
+                    writePortC.WriteTimeout = 200;
                     writePortC.DataReceived += new SerialDataReceivedEventHandler(port_DataReceived);
                     writePortC.Open();
                 }
@@ -334,7 +334,6 @@ namespace WpfApp1
                     switch (state.getWorkMode().name)
                     {
                         case "zero":
-                            println(state.getWorkMode().name);
                             int az = (-state.getAzAngle()) / 158;
                             int inc = (-state.getIncAngle()) / 158;
                             if (az > 1024) az = 1024;
@@ -343,10 +342,21 @@ namespace WpfApp1
                             if (inc < -1024) inc = -1024;
                             state.setUstAz(az);
                             state.setUstInc(inc);
+                            if (check_start.Content.ToString() == "Стоп") check_start.Content = "Проверка";
+                            if (!progon.IsEnabled) progon.IsEnabled = true;
                             break;
 
                         case "progon":
+                            if (check_start.Content.ToString() == "Стоп") check_start.Content = "Проверка";
+                            if (!progon.IsEnabled) progon.IsEnabled = true;
                             println(state.getWorkMode().name);
+                            int prRealSpeedInc = progonSpeedInc;
+                            int prRealSpeedAz = progonSpeedAz;
+                            if (state.GetCheckedParameters() != null)
+                            {
+                                if (!state.GetCheckedParameters().inc) prRealSpeedInc = 0;
+                                if (!state.GetCheckedParameters().az) prRealSpeedAz = 0;
+                            }
                             if (state.getNeedAzAngle()<0) 
                             {
                                 if (state.getAzAngle() < (creetAngleAzN + 5)*3600)
@@ -354,7 +364,7 @@ namespace WpfApp1
                                     state.setNeedAzAngle( creetAngleAzP * 3600);
                                     state.setUstAz(0);
                                 }
-                                else state.setUstAz(-progonSpeedAz);
+                                else state.setUstAz(-prRealSpeedAz);
                             }
                             else
                             {
@@ -363,7 +373,7 @@ namespace WpfApp1
                                     state.setNeedAzAngle(creetAngleAzN * 3600);
                                     state.setUstAz(0);
                                 }
-                                else state.setUstAz(progonSpeedAz);
+                                else state.setUstAz(prRealSpeedAz);
                             }
                             if (state.getNeedIncAngle() < 0)
                             {
@@ -372,7 +382,7 @@ namespace WpfApp1
                                     state.setNeedIncAngle(creetAngleIncP * 3600);
                                     state.setUstInc(0);
                                 }
-                                else state.setUstInc(-progonSpeedInc);
+                                else state.setUstInc(-prRealSpeedInc);
                             }
                             else
                             {
@@ -381,7 +391,7 @@ namespace WpfApp1
                                     state.setNeedIncAngle(creetAngleIncN * 3600);
                                     state.setUstInc(0);
                                 }
-                                else state.setUstInc(progonSpeedInc);
+                                else state.setUstInc(prRealSpeedInc);
                             }
                             break;
                     }
@@ -565,6 +575,22 @@ namespace WpfApp1
             propsWind.Show();
             propsWind.Focus();
             propsWind.state = state;
+        }
+
+        private void start_click(object sender, RoutedEventArgs e)
+        {
+            if (state.getWorkMode().name == "zero")
+            {
+                state.setWorkMode(state.GetCheckedParameters().FirstStart());
+                check_start.Content = "Стоп";
+                progon.IsEnabled = false;
+            }
+            else
+            {
+                state.setWorkMode(state.GetCheckedParameters().ZeroMode());
+                check_start.Content = "Проверка";
+                progon.IsEnabled = true;
+            }
         }
 
         private void Update_ports_func()
