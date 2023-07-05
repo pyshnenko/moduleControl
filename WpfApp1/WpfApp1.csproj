@@ -59,6 +59,7 @@
     <Compile Include="PropetyWindow.xaml.cs">
       <DependentUpon>PropetyWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="sendGenerator.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

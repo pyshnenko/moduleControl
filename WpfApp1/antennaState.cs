@@ -41,8 +41,22 @@ namespace WpfApp1
             if (azMeas == "Значение") azMeasUni = true;
             if (incMeas == "Значение") incMeasUni = true;
         }
+        public void SetAntennaAtPosition(int az, int inc)
+        {
+            int deltaAz = -(getAzAngle() - az);
+            int deltaInc = -(getIncAngle() - inc);
+            deltaAz = Math.Abs(deltaAz) > 1024 ? deltaAz < 0 ? -1024 : 1024 : deltaAz;
+            deltaInc = Math.Abs(deltaInc) > 1024 ? deltaInc < 0 ? -1024 : 1024 : deltaInc;
+            setUstAz(deltaAz);
+            setUstInc(deltaInc);
+        }
         public void SetCheckedParameters(CheckedParameters pars) { this.pars = pars; }
         public CheckedParameters GetCheckedParameters() { return pars; }
+        public CheckedParameters.NowWork GoToNextParameters()
+        {
+            workMode = pars.SetNextWork(workMode);
+            return workMode;
+        }
         public void setLastAzTime(long val) { lastAzTime = val; }
         public void setLastIncTime(long val) { lastIncTime = val; }
         public long getLastAzTime() { return lastAzTime; }
