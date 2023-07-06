@@ -16,6 +16,7 @@ using System.IO.Ports;
 using System.Threading;
 using System.Timers;
 using System.Windows.Markup;
+using System.Reflection;
 
 namespace WpfApp1
 {
@@ -33,6 +34,8 @@ namespace WpfApp1
         readonly static int creetAngleAzN = -90; //Допустимый угол поворота по азимуту (отрицательный)
         readonly static int creetAngleIncP = 10; //Допустимый угол поворота по азимуту (положительный)
         readonly static int creetAngleIncN = -30; //Допустимый угол поворота по азимуту (отрицательный)
+
+        readonly static int speedK = 158; //Коэффициент скорости
 
         readonly static int commandDelay = 2000; //Задержка выдачи команд в модуль !!! ПРИ РАБОТЕ НЕ БОЛЕЕ 500 !!!
 
@@ -263,10 +266,11 @@ namespace WpfApp1
         {
             Dispatcher.Invoke((Action)(() =>
             {
+                if (state.GetCheckedParameters() != null) check_start.IsEnabled = true;
                 if (state.getManualState())
                 {
-                    int az = (state.getManualAzAngle() - state.getAzAngle()) /158;
-                    int inc = (state.getManualIncAngle() - state.getIncAngle()) /158;
+                    int az = (state.getManualAzAngle() - state.getAzAngle()) /speedK;
+                    int inc = (state.getManualIncAngle() - state.getIncAngle()) /speedK;
                     if (az > 1024) az = 1024;
                     if (inc > 1024) inc = 1024;
                     if (az < -1024) az = -1024;
@@ -283,8 +287,8 @@ namespace WpfApp1
                     switch (state.getWorkMode().name)
                     {
                         case "zero":
-                            int az = (-state.getAzAngle()) / 158;
-                            int inc = (-state.getIncAngle()) / 158;
+                            int az = (-state.getAzAngle()) / speedK;
+                            int inc = (-state.getIncAngle()) / speedK;
                             if (az > 1024) az = 1024;
                             if (inc > 1024) inc = 1024;
                             if (az < -1024) az = -1024;
@@ -345,17 +349,47 @@ namespace WpfApp1
                             break;
                         case "naprTrogan":
                             {
-                                if ((Math.Abs(state.getAzAngle()) > 100) || (Math.Abs(state.getIncAngle()) > 100 ))
+                                if (state.startVoltageObj == null)
                                 {
-                                    state.SetAntennaAtPosition(0, 0);
+                                    ustAz.IsReadOnly = true;
+                                    ustInc.IsReadOnly = true;
+                                    ustAzBut.IsEnabled = false;
+                                    ustIncBut.IsEnabled = false;
+                                    state.setStartVoltage(new classes.StartVoltage(
+                                        state,
+                                        creetAngleAzP,
+                                        creetAngleAzN,
+                                        creetAngleIncP,
+                                        creetAngleIncN,
+                                        speedK));
+                                    state.startVoltageObj.StartCheck();
+                                }
+                                else if (!state.startVoltageObj.ready)
+                                {
+                                    state.startVoltageObj.StartCheck();
+                                    ustAz.Text = state.startVoltageObj.minSpeedAz.ToString();
+                                    ustInc.Text = state.startVoltageObj.minSpeedInc.ToString();
                                 }
                                 else
                                 {
-                                    aTimer.Stop();
-                                    naprTroganFunc();
+                                    ustAz.Text = state.startVoltageObj.minSpeedAz.ToString();
+                                    ustInc.Text = state.startVoltageObj.minSpeedInc.ToString();
+                                    if (state.startVoltageObj.Work())
+                                    {
+                                        println("Минимальная уставка по азимуту: " + state.startVoltageObj.minSpeedAz.ToString());
+                                        println("Минимальная уставка по наклону: " + state.startVoltageObj.minSpeedInc.ToString());
+                                        state.GoToNextParameters();
+                                        ustAz.IsReadOnly = false;
+                                        ustInc.IsReadOnly = false;
+                                        ustAzBut.IsEnabled = true;
+                                        ustIncBut.IsEnabled = true;
+                                        ustAz.Text = "";
+                                        ustInc.Text = "";
+                                        state.setStartVoltage(null);
+                                    }
                                 }
-                                break;
                             }
+                            break;
                     }
                     print(state.getUstAz().ToString() + "   ");
                     println(state.getUstInc().ToString());
@@ -369,129 +403,10 @@ namespace WpfApp1
                 }
             }));
         }
-
-        private void naprTroganFunc()
-        {
-            if (state.getWorkMode().azimuth)
-            {
-                while ((state.getAzAngle() > ((creetAngleAzN + 3) * 3600)) || (Math.Abs(state.getIncAngle()) > 100))
-                {
-                    state.SetAntennaAtPosition((creetAngleIncN + 3)*3600, 0);
-                    sendGenerator.Pa30_data sendData = new sendGenerator.Pa30_data(
-                        state.getUstAz(),
-                        state.getUstInc(),
-                        11,
-                        200);
-                    protocol.pa30_pack(sendData);
-                    Thread.Sleep(100);
-                    protocol.askToRead();
-                }
-                int minSpeed = 0, lastAngle = state.getAzAngle();
-                while (state.getAzAngle() < ((creetAngleAzP - 3) * 3600))
-                {
-                    if (Math.Abs(lastAngle - state.getAzAngle()) < 100) minSpeed += 10;
-                    state.setUstAz(minSpeed);
-                    int ust = Math.Abs(state.getIncAngle()) > 1024 ? 1024 : Math.Abs(state.getIncAngle());
-                    if (state.getIncAngle() < 0) ust *= (-1);
-                    state.setUstInc(ust);
-                    lastAngle = state.getAzAngle();
-                    ustAz.Text = state.getUstAz().ToString();
-                    ustInc.Text = state.getUstInc().ToString();
-                    sendGenerator.Pa30_data sendData = new sendGenerator.Pa30_data(
-                        state.getUstAz(),
-                        state.getUstInc(),
-                        11,
-                        200);
-                    protocol.pa30_pack(sendData);
-                    Thread.Sleep(100);
-                    protocol.askToRead();
-                }
-                lastAngle = state.getAzAngle();
-                while (state.getAzAngle() > ((creetAngleAzN + 3) * 3600))
-                {
-                    if (Math.Abs(lastAngle - state.getAzAngle()) < 100) minSpeed += 10;
-                    state.setUstAz(-minSpeed);
-                    int ust = Math.Abs(state.getIncAngle()) > 1024 ? 1024 : Math.Abs(state.getIncAngle());
-                    if (state.getIncAngle() < 0) ust *= (-1);
-                    state.setUstInc(ust);
-                    lastAngle = state.getAzAngle();
-                    ustAz.Text = state.getUstAz().ToString();
-                    ustInc.Text = state.getUstInc().ToString();
-                    sendGenerator.Pa30_data sendData = new sendGenerator.Pa30_data(
-                        state.getUstAz(),
-                        state.getUstInc(),
-                        11,
-                        200);
-                    protocol.pa30_pack(sendData);
-                    Thread.Sleep(100);
-                    protocol.askToRead();
-                }
-                println("Напряжение трогания по оси азимута: " + minSpeed.ToString());
-                state.GoToNextParameters();
-            }
-
-            if (!state.getWorkMode().azimuth)
-            {
-                while ((state.getIncAngle() > ((creetAngleIncN + 1) * 36000)) || (Math.Abs(state.getAzAngle()) > 100))
-                {
-                    state.SetAntennaAtPosition(0, creetAngleAzN + 1);
-                    sendGenerator.Pa30_data sendData = new sendGenerator.Pa30_data(
-                        state.getUstAz(),
-                        state.getUstInc(),
-                        11,
-                        200);
-                    protocol.pa30_pack(sendData);
-                    Thread.Sleep(100);
-                    protocol.askToRead();
-                }
-                int minSpeed = 0, lastAngle = state.getIncAngle();
-                while (state.getIncAngle() < ((creetAngleIncP - 1) * 3600))
-                {
-                    if (Math.Abs(lastAngle - state.getIncAngle()) < 100) minSpeed += 10;
-                    state.setUstInc(minSpeed);
-                    int ust = Math.Abs(state.getAzAngle()) > 1024 ? 1024 : Math.Abs(state.getAzAngle());
-                    if (state.getAzAngle() < 0) ust *= (-1);
-                    state.setUstAz(ust);
-                    lastAngle = state.getIncAngle();
-                    ustAz.Text = state.getUstAz().ToString();
-                    ustInc.Text = state.getUstInc().ToString();
-                    sendGenerator.Pa30_data sendData = new sendGenerator.Pa30_data(
-                        state.getUstAz(),
-                        state.getUstInc(),
-                        11,
-                        200);
-                    protocol.pa30_pack(sendData);
-                    Thread.Sleep(100);
-                    protocol.askToRead();
-                }
-                lastAngle = state.getIncAngle();
-                while (state.getIncAngle() > (creetAngleIncN + 1 * 3600))
-                {
-                    if (Math.Abs(lastAngle - state.getIncAngle()) < 100) minSpeed += 10;
-                    state.setUstInc(-minSpeed);
-                    int ust = Math.Abs(state.getAzAngle()) > 1024 ? 1024 : Math.Abs(state.getAzAngle());
-                    if (state.getAzAngle() < 0) ust *= (-1);
-                    state.setUstAz(ust);
-                    lastAngle = state.getIncAngle();
-                    ustAz.Text = state.getUstAz().ToString();
-                    ustInc.Text = state.getUstInc().ToString();
-                    sendGenerator.Pa30_data sendData = new sendGenerator.Pa30_data(
-                        state.getUstAz(),
-                        state.getUstInc(),
-                        11,
-                        200);
-                    protocol.pa30_pack(sendData);
-                    Thread.Sleep(100);
-                    protocol.askToRead();
-                }
-                println("Напряжение трогания по оси наклона: " + minSpeed.ToString());
-                state.GoToNextParameters();
-                aTimer.Start();
-            }
-        }
-
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
+            CheckedParameters.NowWork work = new CheckedParameters.NowWork("other", true);
+            state.setWorkMode(work);
             int data = Int32.Parse(ustAz.Text);
             if (data > 1024) data = 1024;
             state.setUstAz(data);
@@ -499,6 +414,8 @@ namespace WpfApp1
 
         private void Button_Click_2(object sender, RoutedEventArgs e)
         {
+            CheckedParameters.NowWork work = new CheckedParameters.NowWork("other", true);
+            state.setWorkMode(work);
             int data = Int32.Parse(ustInc.Text);
             if (data > 1024) data = 1024;
             state.setUstInc(data);
@@ -586,7 +503,7 @@ namespace WpfApp1
 
         private void start_click(object sender, RoutedEventArgs e)
         {
-            if (state.getWorkMode().name == "zero")
+            if ((state.getWorkMode().name == "zero") || (state.getWorkMode().name == "other"))
             {
                 state.setWorkMode(state.GetCheckedParameters().FirstStart());
                 check_start.Content = "Стоп";
@@ -594,6 +511,12 @@ namespace WpfApp1
             }
             else
             {
+                ustAz.IsReadOnly = false;
+                ustInc.IsReadOnly = false;
+                ustAzBut.IsEnabled = true;
+                ustIncBut.IsEnabled = true;
+                ustAz.Text = "";
+                ustInc.Text = "";
                 state.setWorkMode(state.GetCheckedParameters().ZeroMode());
                 check_start.Content = "Проверка";
                 progon.IsEnabled = true;
@@ -605,6 +528,20 @@ namespace WpfApp1
             if (upd_port_button.Content.ToString() == "Обновить")
             {
                 string[] ports = SerialPort.GetPortNames();
+                for (int i =0; i< ports.Length; i++)
+                {
+                    try
+                    {
+                        SerialPort port = new SerialPort(ports[i]);
+                        port.Open();
+                        port.Close();
+                    }
+                    catch
+                    {
+                        ports = ports.Where((e, j) => j != i).ToArray();
+                        i--;
+                    }
+                }
                 string portsTotal = "";
                 if (ports.Length == 0) portsTotal = "no com\n";
                 else

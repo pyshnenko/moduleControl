@@ -34,10 +34,10 @@
                 </ComboBox>
                 <Label Height="25" Width="100" Margin="10, 65, 0, 0" VerticalAlignment="Top" HorizontalAlignment="Left">Уставка азимут</Label>
                 <TextBox x:Name="ustAz" Height="25" Width="80" Margin="120, 65, 0, 0" VerticalAlignment="Top" HorizontalAlignment="Left" />
-                <Button Height="25" Width="80" Margin="220, 65, 0, 0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_Click_1" >Подать</Button>
+                <Button Height="25" Width="80" Margin="220, 65, 0, 0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_Click_1" x:Name="ustAzBut">Подать</Button>
                 <Label Height="25" Width="100" Margin="10,95,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">Уставка наклон</Label>
                 <TextBox x:Name="ustInc" Height="25" Width="80" Margin="120, 95, 0, 0" VerticalAlignment="Top" HorizontalAlignment="Left" />
-                <Button Height="25" Width="80" Margin="220, 95, 0, 0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_Click_2" >Подать</Button>
+                <Button Height="25" Width="80" Margin="220, 95, 0, 0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="Button_Click_2" x:Name="ustIncBut">Подать</Button>
             </Grid>
         </GroupBox>
         <GroupBox x:Name="mechBox" Header="Порт" Height="50" Width="420" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="10, 30" IsEnabled="True">
@@ -56,7 +56,7 @@
                         Выбрать параметры<LineBreak/>для проверки
                     </TextBlock>
                 </Button>
-                <Button Height="25" Width="150" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5,45,0,0" Click="start_click" x:Name="check_start">Проверка</Button>
+                <Button Height="25" Width="150" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5,45,0,0" Click="start_click" x:Name="check_start" IsEnabled="False">Проверка</Button>
                 <Button Height="25" Width="150" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5,75,0,0" Click="Button_Click_5" x:Name="progon">Прогон</Button>
             </Grid>
         </GroupBox>

@@ -6,6 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using WpfApp1.classes;
 
 namespace WpfApp1
 {
@@ -31,6 +32,7 @@ namespace WpfApp1
         private CheckedParameters pars;
         private SerialPort readPort = null;
         TextBox text = null;
+        public StartVoltage startVoltageObj = null;
 
         public antennaState() { }
         public antennaState(string azMeas, string incMeas)
@@ -41,6 +43,7 @@ namespace WpfApp1
             if (azMeas == "Значение") azMeasUni = true;
             if (incMeas == "Значение") incMeasUni = true;
         }
+        public void setStartVoltage(StartVoltage val) { this.startVoltageObj = val; }
         public void SetAntennaAtPosition(int az, int inc)
         {
             int deltaAz = -(getAzAngle() - az);
@@ -55,6 +58,7 @@ namespace WpfApp1
         public CheckedParameters.NowWork GoToNextParameters()
         {
             workMode = pars.SetNextWork(workMode);
+            setWorkMode(workMode);
             return workMode;
         }
         public void setLastAzTime(long val) { lastAzTime = val; }

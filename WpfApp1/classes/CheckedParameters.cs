@@ -43,7 +43,7 @@ namespace WpfApp1
                     if (working.azimuth) { working.azimuth = false; return working; }
                     else
                     {
-                        int index = Array.IndexOf(mode, working.name) + 1;
+                        int index = Array.IndexOf(workMode, working.name) + 1;
                         while (!mode[index]) index++;
                         exData.name = workMode[index];
                         exData.azimuth = true;
@@ -52,7 +52,7 @@ namespace WpfApp1
                 }
                 else
                 {
-                    int index = Array.IndexOf(mode, working.name) + 1;
+                    int index = Array.IndexOf(workMode, working.name) + 1;
                     while (!mode[index]) index++;
                     exData.name = workMode[index];
                     exData.azimuth = working.azimuth;
@@ -66,7 +66,7 @@ namespace WpfApp1
         {
             int index = 0;
             while (!mode[index]) index++;
-            NowWork exData = new NowWork( az && inc ? workMode[index] : "zero", az == true);
+            NowWork exData = new NowWork( az || inc ? workMode[index] : "zero", az == true);
             return exData;
         }
 
