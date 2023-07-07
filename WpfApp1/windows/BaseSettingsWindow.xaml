@@ -1,0 +1,67 @@
+﻿<Window x:Class="WpfApp1.BaseSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfApp1"
+        mc:Ignorable="d"
+        Title="Технические параметры" Height="640" Width="550">
+    <Grid>
+        <WrapPanel Orientation="Vertical" HorizontalAlignment="Center">
+            <WrapPanel Orientation="Vertical">
+                <GroupBox Margin="10" Header="Режим прогона">
+                    <WrapPanel Orientation="Vertical">
+                        <Grid Width="500">
+                            <Label Margin="10" HorizontalAlignment="Left">Скорость прогона по азимуту</Label>
+                            <TextBox Width="150" Margin="10" x:Name="progonSpeedAz" HorizontalAlignment="Right"></TextBox>
+                        </Grid>
+                        <Grid Width="500">
+                            <Label Margin="10" HorizontalAlignment="Left">Скорость прогона по наклону</Label>
+                            <TextBox Width="150" Margin="10" x:Name="progonSpeedInc" HorizontalAlignment="Right"></TextBox>
+                        </Grid>
+                    </WrapPanel>
+                </GroupBox>
+                <GroupBox Margin="10" Header="Углы прокачки">
+                    <WrapPanel Orientation="Vertical">
+                        <Grid Width="500">
+                            <Label Margin="10" HorizontalAlignment="Left">Допустимый угол прокачни по азимуту (+)</Label>
+                            <TextBox Width="150" Margin="10" x:Name="creetAngleAzP" HorizontalAlignment="Right"></TextBox>
+                        </Grid>
+                        <Grid Width="500">
+                            <Label Margin="10" HorizontalAlignment="Left">Допустимый угол прокачни по азимуту (-)</Label>
+                            <TextBox Width="150" Margin="10" x:Name="creetAngleAzN" HorizontalAlignment="Right"></TextBox>
+                        </Grid>
+                        <Grid Width="500">
+                            <Label Margin="10" HorizontalAlignment="Left">Допустимый угол прокачни по наклону (+)</Label>
+                            <TextBox Width="150" Margin="10" x:Name="creetAngleIncP" HorizontalAlignment="Right"></TextBox>
+                        </Grid>
+                        <Grid Width="500">
+                            <Label Margin="10" HorizontalAlignment="Left">Допустимый угол прокачни по наклону (-)</Label>
+                            <TextBox Width="150" Margin="10" x:Name="creetAngleIncN" HorizontalAlignment="Right"></TextBox>
+                        </Grid>
+                    </WrapPanel>
+                </GroupBox>
+                <GroupBox Margin="10" Header="Параметры">
+                    <WrapPanel Orientation="Vertical">
+                        <Grid Width="500">
+                            <Label Margin="10" HorizontalAlignment="Left">Коэффициент скорости</Label>
+                            <TextBox Width="150" Margin="10" x:Name="speedK" HorizontalAlignment="Right"></TextBox>
+                        </Grid>
+                        <Grid Width="500">
+                            <Label Margin="10" HorizontalAlignment="Left">Длительность интервала обмена, мс</Label>
+                            <TextBox Width="150" Margin="10" x:Name="commandDelay" HorizontalAlignment="Right"></TextBox>
+                        </Grid>
+                        <WrapPanel Orientation="Horizontal" Width="500" HorizontalAlignment="Center">
+                            <Label Margin="10">Режим отладки</Label>
+                            <CheckBox VerticalAlignment="Center" x:Name="debug" />
+                        </WrapPanel>
+                    </WrapPanel>
+                </GroupBox>
+            </WrapPanel>
+            <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Margin="10" Width="100" Height="25" Click="Button_Click">Принять</Button>
+                <Button Margin="10" Width="100" Height="25" Click="Button_Click_1">Отмена</Button>
+            </WrapPanel>
+        </WrapPanel>
+    </Grid>
+</Window>

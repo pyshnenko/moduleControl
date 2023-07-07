@@ -17,6 +17,9 @@ using System.Threading;
 using System.Timers;
 using System.Windows.Markup;
 using System.Reflection;
+using System.IO;
+using static System.Net.Mime.MediaTypeNames;
+using System.Text.Json;
 
 namespace WpfApp1
 {
@@ -26,26 +29,31 @@ namespace WpfApp1
     ///   
     public partial class MainWindow : Window
     {
-        bool debugComWriteMode = true;
+        //int progonSpeedAz = 25; //Скорость прогона по азимуту
+        //int progonSpeedInc = 25; //Скорость прогона по наклону
+        //int creetAngleAzP = 90; //Допустимый угол поворота по азимуту (положительный)
+        //int creetAngleAzN = -90; //Допустимый угол поворота по азимуту (отрицательный)
+        //int creetAngleIncP = 10; //Допустимый угол поворота по азимуту (положительный)
+        //int creetAngleIncN = -30; //Допустимый угол поворота по азимуту (отрицательный)
 
-        readonly static int progonSpeedAz = 25; //Скорость прогона по азимуту
-        readonly static int progonSpeedInc = 25; //Скорость прогона по наклону
-        readonly static int creetAngleAzP = 90; //Допустимый угол поворота по азимуту (положительный)
-        readonly static int creetAngleAzN = -90; //Допустимый угол поворота по азимуту (отрицательный)
-        readonly static int creetAngleIncP = 10; //Допустимый угол поворота по азимуту (положительный)
-        readonly static int creetAngleIncN = -30; //Допустимый угол поворота по азимуту (отрицательный)
+        //int speedK = 158; //Коэффициент скорости
 
-        readonly static int speedK = 158; //Коэффициент скорости
+        //int commandDelay = 200; //Задержка выдачи команд в модуль
+                                               //!!! ПРИ РАБОТЕ НЕ БОЛЕЕ 500 !!!
+                                               //рекомендую 200. меньше 100 - тупит если подключен дебаг
+                                               //без дебага выжал 18
 
-        readonly static int commandDelay = 2000; //Задержка выдачи команд в модуль !!! ПРИ РАБОТЕ НЕ БОЛЕЕ 500 !!!
+        //bool debug = true;
 
+        ForSave antennaParameters = new ForSave(25, 25, 90, -90, 10, -30, 158, 2000, true);
         readonly sendGenerator protocol = new sendGenerator();
 
-        readonly string ver = "0.0.1";
+        readonly string ver = "0.0.2";
         readonly antennaState state = new antennaState();
         SerialPort readPortC, writePortC;
         readonly PropetyWindow propsWind = new PropetyWindow();
         private static System.Timers.Timer aTimer;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -64,6 +72,25 @@ namespace WpfApp1
             manualAzAngle.Text = "0";
             manualIncAngle.Text = "0";
             state.setWorkMode(new CheckedParameters.NowWork("zero", true));
+            bool fileExist = File.Exists("settings.cfg");
+            if (fileExist) 
+            { 
+                println("Файл найден", antennaParameters.debug);
+                using (StreamReader reader = new StreamReader("settings.cfg"))
+                {
+                    string text = reader.ReadToEnd();
+                    antennaParameters.unparseAndSave(text);
+                    if (!antennaParameters.correct) fileExist = false;
+                }
+            }
+            if (!fileExist)
+            { 
+                println("Файл не найден или некорректен");
+                using (StreamWriter writer = new StreamWriter("settings.cfg", false))
+                {
+                    writer.WriteLineAsync(antennaParameters.parsedString());
+                }
+            }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -146,8 +173,8 @@ namespace WpfApp1
                     readPortC.DataBits = 8;
                     readPortC.Parity = System.IO.Ports.Parity.None;
                     readPortC.StopBits = System.IO.Ports.StopBits.One;
-                    readPortC.ReadTimeout = 200;
-                    readPortC.WriteTimeout = 200;
+                    readPortC.ReadTimeout = 1;
+                    readPortC.WriteTimeout = 1;
                     readPortC.DataReceived += new SerialDataReceivedEventHandler(port_DataReceived);
                     readPortC.Open();
                     state.setReadPort(readPortC);
@@ -185,8 +212,8 @@ namespace WpfApp1
                     writePortC.DataBits = 8;
                     writePortC.Parity = System.IO.Ports.Parity.None;
                     writePortC.StopBits = System.IO.Ports.StopBits.One;
-                    writePortC.ReadTimeout = 200;
-                    writePortC.WriteTimeout = 200;
+                    writePortC.ReadTimeout = 1;
+                    writePortC.WriteTimeout = 1;
                     writePortC.DataReceived += new SerialDataReceivedEventHandler(port_DataReceived);
                     writePortC.Open();
                 }
@@ -207,7 +234,7 @@ namespace WpfApp1
             protocol.setPortW(writePortC, readPortC);
             aTimer?.Stop();
             aTimer = new System.Timers.Timer();
-            aTimer.Interval = commandDelay;
+            aTimer.Interval = antennaParameters.commandDelay;
             aTimer.Elapsed += OnTimedEvent;
             aTimer.AutoReset = true;
             aTimer.Enabled = true;
@@ -236,30 +263,30 @@ namespace WpfApp1
                         bData = (byte)readPortC.ReadByte();
                     }catch
                     {
-                        print("end");
+                        print("end", antennaParameters.debug);
                         break;
                     }
                     dataBytes = i;
                     data[i] = bData;
-                    print(bData.ToString() + " ");
+                    print(bData.ToString() + " ", antennaParameters.debug);
                 }
                 sendGenerator.InpData inpData = new sendGenerator.InpData();
                 inpData = protocol.readData(data);
                 if (inpData.correct)
                 {
                     long time = DateTime.Now.Ticks;
-                    if (state.getLastAzTime() != 0) println("az speed: " + ((int)((state.getAzAngle() - inpData.angle_a) * 1000 / (time - state.getLastAzTime()))).ToString());
+                    if ((state.getLastAzTime() != 0) && antennaParameters.debug) println("az speed: " + ((int)((state.getAzAngle() - inpData.angle_a) * 1000 / (time - state.getLastAzTime()))).ToString());
                     state.setLastAzTime(time);
                     state.setAzAngle("", inpData.angle_a);
                     azTextBox.Text = state.getAzAngleText();
 
-                    if (state.getLastIncTime() != 0) println("inc speed: " + ((int)((state.getIncAngle() - inpData.angle_n) * 1000 / (time - state.getLastIncTime()))).ToString());
+                    if ((state.getLastIncTime() != 0) && antennaParameters.debug) println("inc speed: " + ((int)((state.getIncAngle() - inpData.angle_n) * 1000 / (time - state.getLastIncTime()))).ToString());
                     state.setLastIncTime(time);
                     state.setIncAngle("", inpData.angle_n);
                     incTextBox.Text = state.getIncAngleText();
 
                 }
-                println("");
+                println("", antennaParameters.debug);
             }));
         }
         private void OnTimedEvent(Object source, System.Timers.ElapsedEventArgs e)
@@ -269,8 +296,8 @@ namespace WpfApp1
                 if (state.GetCheckedParameters() != null) check_start.IsEnabled = true;
                 if (state.getManualState())
                 {
-                    int az = (state.getManualAzAngle() - state.getAzAngle()) /speedK;
-                    int inc = (state.getManualIncAngle() - state.getIncAngle()) /speedK;
+                    int az = (state.getManualAzAngle() - state.getAzAngle()) / antennaParameters.speedK;
+                    int inc = (state.getManualIncAngle() - state.getIncAngle()) / antennaParameters.speedK;
                     if (az > 1024) az = 1024;
                     if (inc > 1024) inc = 1024;
                     if (az < -1024) az = -1024;
@@ -279,16 +306,15 @@ namespace WpfApp1
                     println(inc.ToString());
                     sendGenerator.Pa30_data sendData = new sendGenerator.Pa30_data(az, inc, 11, 10);
                     protocol.pa30_pack(sendData);
-                    //Packet_command_registers_constructor(1, 5, az);
                 }
                 else
                 {
-                    println(state.getWorkMode().name);
+                    println(state.getWorkMode().name, antennaParameters.debug);
                     switch (state.getWorkMode().name)
                     {
                         case "zero":
-                            int az = (-state.getAzAngle()) / speedK;
-                            int inc = (-state.getIncAngle()) / speedK;
+                            int az = (-state.getAzAngle()) / antennaParameters.speedK;
+                            int inc = (-state.getIncAngle()) / antennaParameters.speedK;
                             if (az > 1024) az = 1024;
                             if (inc > 1024) inc = 1024;
                             if (az < -1024) az = -1024;
@@ -302,9 +328,9 @@ namespace WpfApp1
                         case "progon":
                             if (check_start.Content.ToString() == "Стоп") check_start.Content = "Проверка";
                             if (!progon.IsEnabled) progon.IsEnabled = true;
-                            println(state.getWorkMode().name);
-                            int prRealSpeedInc = progonSpeedInc;
-                            int prRealSpeedAz = progonSpeedAz;
+                            println(state.getWorkMode().name, antennaParameters.debug);
+                            int prRealSpeedInc = antennaParameters.progonSpeedInc;
+                            int prRealSpeedAz = antennaParameters.progonSpeedAz;
                             if (state.GetCheckedParameters() != null)
                             {
                                 if (!state.GetCheckedParameters().inc) prRealSpeedInc = 0;
@@ -312,36 +338,36 @@ namespace WpfApp1
                             }
                             if (state.getNeedAzAngle()<0) 
                             {
-                                if (state.getAzAngle() < (creetAngleAzN + 5)*3600)
+                                if (state.getAzAngle() < (antennaParameters.creetAngleAzN + 5)*3600)
                                 {
-                                    state.setNeedAzAngle( creetAngleAzP * 3600);
+                                    state.setNeedAzAngle(antennaParameters.creetAngleAzP * 3600);
                                     state.setUstAz(0);
                                 }
                                 else state.setUstAz(-prRealSpeedAz);
                             }
                             else
                             {
-                                if (state.getAzAngle() > (creetAngleAzP - 5) * 3600)
+                                if (state.getAzAngle() > (antennaParameters.creetAngleAzP - 5) * 3600)
                                 {
-                                    state.setNeedAzAngle(creetAngleAzN * 3600);
+                                    state.setNeedAzAngle(antennaParameters.creetAngleAzN * 3600);
                                     state.setUstAz(0);
                                 }
                                 else state.setUstAz(prRealSpeedAz);
                             }
                             if (state.getNeedIncAngle() < 0)
                             {
-                                if (state.getIncAngle() < (creetAngleIncN + 5) * 3600)
+                                if (state.getIncAngle() < (antennaParameters.creetAngleIncN + 5) * 3600)
                                 {
-                                    state.setNeedIncAngle(creetAngleIncP * 3600);
+                                    state.setNeedIncAngle(antennaParameters.creetAngleIncP * 3600);
                                     state.setUstInc(0);
                                 }
                                 else state.setUstInc(-prRealSpeedInc);
                             }
                             else
                             {
-                                if (state.getIncAngle() > (creetAngleIncP - 5) * 3600)
+                                if (state.getIncAngle() > (antennaParameters.creetAngleIncP - 5) * 3600)
                                 {
-                                    state.setNeedIncAngle(creetAngleIncN * 3600);
+                                    state.setNeedIncAngle(antennaParameters.creetAngleIncN * 3600);
                                     state.setUstInc(0);
                                 }
                                 else state.setUstInc(prRealSpeedInc);
@@ -357,11 +383,11 @@ namespace WpfApp1
                                     ustIncBut.IsEnabled = false;
                                     state.setStartVoltage(new classes.StartVoltage(
                                         state,
-                                        creetAngleAzP,
-                                        creetAngleAzN,
-                                        creetAngleIncP,
-                                        creetAngleIncN,
-                                        speedK));
+                                        antennaParameters.creetAngleAzP,
+                                        antennaParameters.creetAngleAzN,
+                                        antennaParameters.creetAngleIncP,
+                                        antennaParameters.creetAngleIncN,
+                                        antennaParameters.speedK));
                                     state.startVoltageObj.StartCheck();
                                 }
                                 else if (!state.startVoltageObj.ready)
@@ -391,13 +417,13 @@ namespace WpfApp1
                             }
                             break;
                     }
-                    print(state.getUstAz().ToString() + "   ");
-                    println(state.getUstInc().ToString());
+                    print(state.getUstAz().ToString() + "   ", antennaParameters.debug);
+                    println(state.getUstInc().ToString(), antennaParameters.debug);
                     sendGenerator.Pa30_data sendData = new sendGenerator.Pa30_data(
                         state.getUstAz(), 
                         state.getUstInc(), 
                         11,
-                        (ushort)(commandDelay > 500 ? 50000 : (commandDelay*100)));
+                        (ushort)(antennaParameters.commandDelay > 500 ? 50000 : (antennaParameters.commandDelay *100)));
                     protocol.pa30_pack(sendData);
                     protocol.askToRead();
                 }
@@ -456,32 +482,6 @@ namespace WpfApp1
             textField.Text = "";
         }
 
-        private void println(string text)
-        {
-            textFieldUpd(text + "\n");
-        }
-        private void print(string text)
-        {
-            textFieldUpd(text);
-        }
-
-        private void Update_ports(object sender, RoutedEventArgs e)
-        {
-            Update_ports_func();
-        }
-
-        private void textFieldUpd(string text)
-        {
-            if (textField.Text.Length <1000)
-                textField.Text += text;
-            else
-            {
-                string textp = textField.Text + text;
-                textField.Text = textp.Substring(textp.Length - 1000);
-            }
-            textField.ScrollToEnd();
-        }
-
         private void Button_Click_5(object sender, RoutedEventArgs e)
         {
             progon.Content = state.getWorkMode().name == "progon" ? "Прогон" : "Стоп" ;
@@ -489,8 +489,8 @@ namespace WpfApp1
             state.setWorkMode(work);
             if (state.getWorkMode().name == "progon")
             {
-                state.setNeedAzAngle(creetAngleAzN * 3600);
-                state.setNeedIncAngle(creetAngleIncN * 3600);
+                state.setNeedAzAngle(antennaParameters.creetAngleAzN * 3600);
+                state.setNeedIncAngle(antennaParameters.creetAngleIncN * 3600);
             }
         }
 
@@ -561,6 +561,38 @@ namespace WpfApp1
                 aTimer.Stop();
                 upd_port_button.Content = "Обновить";
             }
+        }
+
+        private void BaseSettings_Click(object sender, RoutedEventArgs e)
+        {
+            BaseSettingsWindow BaseSettings = new BaseSettingsWindow();
+            BaseSettings.Show();
+        }
+
+        private void println(string text, bool debug = false)
+        {
+            if (debug) textFieldUpd(text + "\n");
+        }
+        private void print(string text, bool debug = false)
+        {
+            if (debug) textFieldUpd(text);
+        }
+
+        private void Update_ports(object sender, RoutedEventArgs e)
+        {
+            Update_ports_func();
+        }
+
+        private void textFieldUpd(string text)
+        {
+            if (textField.Text.Length < 1000)
+                textField.Text += text;
+            else
+            {
+                string textp = textField.Text + text;
+                textField.Text = textp.Substring(textp.Length - 1000);
+            }
+            textField.ScrollToEnd();
         }
     }
 }
