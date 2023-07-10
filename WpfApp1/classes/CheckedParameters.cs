@@ -8,8 +8,8 @@ namespace WpfApp1
 {
     public class CheckedParameters
     {
-        private static readonly string[] workMode = new string[6] { "naprTrogan", "kPered", "maxSpeed", "minLength", "progon", "zero" };
-        private static readonly bool[] mode = new bool[6];
+        private static readonly string[] workMode = new string[7] { "naprTrogan", "naprTroganSect", "kPered", "maxSpeed", "minLength", "progon", "zero" };
+        private static readonly bool[] mode = new bool[7];
         public readonly bool az;
         public readonly bool inc;
 
@@ -21,14 +21,15 @@ namespace WpfApp1
             public NowWork(string name, bool azimuth) { this.name = name; this.azimuth = azimuth; }
         }
 
-        public CheckedParameters(bool naprTrogan, bool kPered, bool maxSpeed, bool minLength, bool progon, bool az, bool inc)
+        public CheckedParameters(bool naprTrogan, bool naprTroganSect, bool kPered, bool maxSpeed, bool minLength, bool progon, bool az, bool inc)
         {
             mode[0] = naprTrogan;
-            mode[1] = kPered;
-            mode[2] = maxSpeed;
-            mode[3] = minLength;
-            mode[4] = progon;
-            mode[5] = true;
+            mode[1] = naprTroganSect;
+            mode[2] = kPered;
+            mode[3] = maxSpeed;
+            mode[4] = minLength;
+            mode[5] = progon;
+            mode[6] = true;
             this.az = az;
             this.inc = inc;
         }

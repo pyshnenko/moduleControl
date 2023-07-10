@@ -34,6 +34,7 @@ namespace WpfApp1
         {
             CheckedParameters pars = new CheckedParameters(
                     naprTrogan.IsChecked == true,
+                    naprTroganSect.IsChecked == true,
                     kPered.IsChecked == true,
                     maxSpeed.IsChecked == true,
                     minLength.IsChecked == true,

@@ -1,4 +1,5 @@
 ﻿<Window x:Class="WpfApp1.BaseSettingsWindow"
+        Icon="pack://application:,,,/static/favicon.ico"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -52,8 +53,14 @@
                             <TextBox Width="150" Margin="10" x:Name="commandDelay" HorizontalAlignment="Right"></TextBox>
                         </Grid>
                         <WrapPanel Orientation="Horizontal" Width="500" HorizontalAlignment="Center">
-                            <Label Margin="10">Режим отладки</Label>
-                            <CheckBox VerticalAlignment="Center" x:Name="debug" />
+                            <WrapPanel Width="250">
+                                <Label Margin="10">Режим отладки</Label>
+                                <CheckBox VerticalAlignment="Center" x:Name="debug" />
+                            </WrapPanel>
+                            <WrapPanel>
+                                <Label Margin="10">Заперт выдачи уставок</Label>
+                                <CheckBox VerticalAlignment="Center" x:Name="readonlyP" />
+                            </WrapPanel>
                         </WrapPanel>
                     </WrapPanel>
                 </GroupBox>

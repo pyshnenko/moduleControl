@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,6 +12,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.IO;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace WpfApp1
 {
@@ -19,13 +22,38 @@ namespace WpfApp1
     /// </summary>
     public partial class BaseSettingsWindow : Window
     {
-        public BaseSettingsWindow()
+
+        private ForSave pars;
+        public BaseSettingsWindow(ForSave parameters)
         {
             InitializeComponent();
+            pars = parameters;
+            progonSpeedAz.Text = parameters.progonSpeedAz.ToString();
+            progonSpeedInc.Text = parameters.progonSpeedInc.ToString();
+            creetAngleAzP.Text = parameters.creetAngleAzP.ToString();
+            creetAngleAzN.Text = parameters.creetAngleAzN.ToString();
+            creetAngleIncP.Text = parameters.creetAngleIncP.ToString();
+            creetAngleIncN.Text = parameters.creetAngleIncN.ToString();
+            speedK.Text = parameters.speedK.ToString();
+            commandDelay.Text = parameters.commandDelay.ToString();
+            debug.IsChecked = parameters.debug;
+            readonlyP.IsChecked = parameters.readonlyP;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            pars.progonSpeedAz = int.Parse(progonSpeedAz.Text);
+            pars.progonSpeedInc = int.Parse(progonSpeedInc.Text);
+            pars.creetAngleAzP = int.Parse(creetAngleAzP.Text);
+            pars.creetAngleAzN = int.Parse(creetAngleAzN.Text);
+            pars.creetAngleIncP = int.Parse(creetAngleIncP.Text);
+            pars.creetAngleIncN = int.Parse(creetAngleIncN.Text);
+            pars.speedK = int.Parse(speedK.Text);
+            pars.commandDelay = int.Parse(commandDelay.Text);
+            pars.debug = (bool)debug.IsChecked;
+            pars.readonlyP = (bool)readonlyP.IsChecked;
+            string data = JsonSerializer.Serialize(pars);
+            File.WriteAllText("settings.cfg", data);
             Close();
         }
 

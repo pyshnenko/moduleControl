@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -96,6 +97,10 @@ namespace WpfApp1
             //		printf("> PA30: rs485_buf_out[%d]: %d\n", i-4, rs485_buf_out[i]);
 
             // add FL0A if needed
+
+            for (i=0; i< header_size; i++)
+                rs485_buf_out_[i] = rs485_buf_out[i];
+
             for (i = header_size, j = header_size; i < pa30_size; i++, j++)
             {
                 rs485_buf_out_[j] = rs485_buf_out[i];

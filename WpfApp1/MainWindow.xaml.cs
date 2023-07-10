@@ -45,7 +45,20 @@ namespace WpfApp1
 
         //bool debug = true;
 
-        ForSave antennaParameters = new ForSave(25, 25, 90, -90, 10, -30, 158, 2000, true);
+        ForSave antennaParameters = new ForSave()
+        {
+            progonSpeedAz = 25,
+            progonSpeedInc = 25,
+            creetAngleAzP = 90,
+            creetAngleAzN = -90,
+            creetAngleIncP = 10,
+            creetAngleIncN = -30,
+            speedK = 158,
+            commandDelay = 2000,
+            debug = true,
+            correct = false,
+            readonlyP = true
+        };
         readonly sendGenerator protocol = new sendGenerator();
 
         readonly string ver = "0.0.2";
@@ -86,10 +99,8 @@ namespace WpfApp1
             if (!fileExist)
             { 
                 println("Файл не найден или некорректен");
-                using (StreamWriter writer = new StreamWriter("settings.cfg", false))
-                {
-                    writer.WriteLineAsync(antennaParameters.parsedString());
-                }
+                string data = JsonSerializer.Serialize(antennaParameters);
+                File.WriteAllText("settings.cfg", data);
             }
         }
 
@@ -305,7 +316,7 @@ namespace WpfApp1
                     print(az.ToString() + "   ");
                     println(inc.ToString());
                     sendGenerator.Pa30_data sendData = new sendGenerator.Pa30_data(az, inc, 11, 10);
-                    protocol.pa30_pack(sendData);
+                     if (!antennaParameters.readonlyP) protocol.pa30_pack(sendData);
                 }
                 else
                 {
@@ -327,6 +338,10 @@ namespace WpfApp1
 
                         case "progon":
                             if (check_start.Content.ToString() == "Стоп") check_start.Content = "Проверка";
+                            else
+                            {
+                                if (state.getWorkMode().name == "progon") progon.Content = "Стоп";
+                            }
                             if (!progon.IsEnabled) progon.IsEnabled = true;
                             println(state.getWorkMode().name, antennaParameters.debug);
                             int prRealSpeedInc = antennaParameters.progonSpeedInc;
@@ -372,38 +387,88 @@ namespace WpfApp1
                                 }
                                 else state.setUstInc(prRealSpeedInc);
                             }
+                            ustAz.Text = state.getUstAz().ToString();
+                            ustInc.Text = state.getUstInc().ToString();
                             break;
                         case "naprTrogan":
+                        {
+                            if (state.startVoltageObj == null)
                             {
-                                if (state.startVoltageObj == null)
+                                ustAz.IsReadOnly = true;
+                                ustInc.IsReadOnly = true;
+                                ustAzBut.IsEnabled = false;
+                                ustIncBut.IsEnabled = false;
+                                state.setStartVoltage(new classes.StartVoltage(
+                                    state,
+                                    antennaParameters.creetAngleAzP,
+                                    antennaParameters.creetAngleAzN,
+                                    antennaParameters.creetAngleIncP,
+                                    antennaParameters.creetAngleIncN,
+                                    antennaParameters.speedK));
+                                state.startVoltageObj.StartCheck();
+                            }
+                            else if (!state.startVoltageObj.ready)
+                            {
+                                state.startVoltageObj.StartCheck();
+                                ustAz.Text = state.startVoltageObj.minSpeedAz.ToString();
+                                ustInc.Text = state.startVoltageObj.minSpeedInc.ToString();
+                            }
+                            else
+                            {
+                                ustAz.Text = state.startVoltageObj.minSpeedAz.ToString();
+                                ustInc.Text = state.startVoltageObj.minSpeedInc.ToString();
+                                if (state.startVoltageObj.Work())
+                                {
+                                    println("Минимальная уставка по азимуту: " + state.startVoltageObj.minSpeedAz.ToString());
+                                    println("Минимальная уставка по наклону: " + state.startVoltageObj.minSpeedInc.ToString());
+                                    state.GoToNextParameters();
+                                    ustAz.IsReadOnly = false;
+                                    ustInc.IsReadOnly = false;
+                                    ustAzBut.IsEnabled = true;
+                                    ustIncBut.IsEnabled = true;
+                                    ustAz.Text = "";
+                                    ustInc.Text = "";
+                                    state.setStartVoltage(null);
+                                }
+                            }
+                            break;
+                            }
+                        case "naprTroganSect":
+                            {
+                                if (state.startVoltageObjSector == null)
                                 {
                                     ustAz.IsReadOnly = true;
                                     ustInc.IsReadOnly = true;
                                     ustAzBut.IsEnabled = false;
                                     ustIncBut.IsEnabled = false;
-                                    state.setStartVoltage(new classes.StartVoltage(
+                                    state.setStartVoltageSector(new classes.StartVoltageSector(
                                         state,
                                         antennaParameters.creetAngleAzP,
                                         antennaParameters.creetAngleAzN,
                                         antennaParameters.creetAngleIncP,
                                         antennaParameters.creetAngleIncN,
                                         antennaParameters.speedK));
-                                    state.startVoltageObj.StartCheck();
+                                    state.startVoltageObjSector.StartCheck();
                                 }
-                                else if (!state.startVoltageObj.ready)
+                                else if (!state.startVoltageObjSector.ready)
                                 {
-                                    state.startVoltageObj.StartCheck();
-                                    ustAz.Text = state.startVoltageObj.minSpeedAz.ToString();
-                                    ustInc.Text = state.startVoltageObj.minSpeedInc.ToString();
+                                    state.startVoltageObjSector.StartCheck();
+                                    ustAz.Text = state.startVoltageObjSector.nowSpeed.ToString();
+                                    ustInc.Text = state.startVoltageObjSector.minSpeedInc.ToString();
                                 }
                                 else
                                 {
-                                    ustAz.Text = state.startVoltageObj.minSpeedAz.ToString();
-                                    ustInc.Text = state.startVoltageObj.minSpeedInc.ToString();
-                                    if (state.startVoltageObj.Work())
+                                    ustAz.Text = state.startVoltageObjSector.nowSpeed.ToString();
+                                    ustInc.Text = state.startVoltageObjSector.minSpeedInc.ToString();
+                                    if (state.startVoltageObjSector.Work())
                                     {
-                                        println("Минимальная уставка по азимуту: " + state.startVoltageObj.minSpeedAz.ToString());
-                                        println("Минимальная уставка по наклону: " + state.startVoltageObj.minSpeedInc.ToString());
+                                        println("Минимальная уставка по азимуту в секторе -90 - -45 при движении по часовой: " + state.startVoltageObjSector.minSpeedAzNP.ToString());
+                                        println("Минимальная уставка по азимуту в секторе -45 - 45 при движении по часовой: " + state.startVoltageObjSector.minSpeedAzZP.ToString());
+                                        println("Минимальная уставка по азимуту в секторе 45 - 90 при движении по часовой: " + state.startVoltageObjSector.minSpeedAzPP.ToString());
+                                        println("Минимальная уставка по азимуту в секторе 90 - 45 при движении против часовой: " + state.startVoltageObjSector.minSpeedAzPN.ToString());
+                                        println("Минимальная уставка по азимуту в секторе 45 - -45 при движении против часовой: " + state.startVoltageObjSector.minSpeedAzZN.ToString());
+                                        println("Минимальная уставка по азимуту в секторе -45 - -90 при движении против часовой: " + state.startVoltageObjSector.minSpeedAzNN.ToString());
+                                        println("Минимальная уставка по наклону: " + state.startVoltageObjSector.minSpeedInc.ToString());
                                         state.GoToNextParameters();
                                         ustAz.IsReadOnly = false;
                                         ustInc.IsReadOnly = false;
@@ -411,20 +476,20 @@ namespace WpfApp1
                                         ustIncBut.IsEnabled = true;
                                         ustAz.Text = "";
                                         ustInc.Text = "";
-                                        state.setStartVoltage(null);
+                                        state.setStartVoltageSector(null);
                                     }
                                 }
+                                break;
                             }
-                            break;
                     }
                     print(state.getUstAz().ToString() + "   ", antennaParameters.debug);
                     println(state.getUstInc().ToString(), antennaParameters.debug);
                     sendGenerator.Pa30_data sendData = new sendGenerator.Pa30_data(
-                        state.getUstAz(), 
-                        state.getUstInc(), 
-                        11,
-                        (ushort)(antennaParameters.commandDelay > 500 ? 50000 : (antennaParameters.commandDelay *100)));
-                    protocol.pa30_pack(sendData);
+                        state.getUstAz(),
+                        state.getUstInc(),
+                        00,
+                        (ushort)0x0800);//(ushort)(antennaParameters.commandDelay > 500 ? 50000 : (antennaParameters.commandDelay *100)));
+                    if (!antennaParameters.readonlyP) protocol.pa30_pack(sendData);
                     protocol.askToRead();
                 }
             }));
@@ -485,6 +550,8 @@ namespace WpfApp1
         private void Button_Click_5(object sender, RoutedEventArgs e)
         {
             progon.Content = state.getWorkMode().name == "progon" ? "Прогон" : "Стоп" ;
+            ustAz.IsReadOnly = state.getWorkMode().name == "progon";
+            ustInc.IsReadOnly = state.getWorkMode().name == "progon";
             CheckedParameters.NowWork work = new CheckedParameters.NowWork(state.getWorkMode().name == "progon" ? "zero" : "progon", true);
             state.setWorkMode(work);
             if (state.getWorkMode().name == "progon")
@@ -558,6 +625,8 @@ namespace WpfApp1
                 writePort.SelectedIndex = -1;
                 readPortC.Close();
                 writePortC.Close();
+                readPortC = null;
+                writePortC = null;
                 aTimer.Stop();
                 upd_port_button.Content = "Обновить";
             }
@@ -565,17 +634,17 @@ namespace WpfApp1
 
         private void BaseSettings_Click(object sender, RoutedEventArgs e)
         {
-            BaseSettingsWindow BaseSettings = new BaseSettingsWindow();
+            BaseSettingsWindow BaseSettings = new BaseSettingsWindow(antennaParameters);
             BaseSettings.Show();
         }
 
         private void println(string text, bool debug = false)
         {
-            if (debug) textFieldUpd(text + "\n");
+            if (!debug) textFieldUpd(text + "\n");
         }
         private void print(string text, bool debug = false)
         {
-            if (debug) textFieldUpd(text);
+            if (!debug) textFieldUpd(text);
         }
 
         private void Update_ports(object sender, RoutedEventArgs e)

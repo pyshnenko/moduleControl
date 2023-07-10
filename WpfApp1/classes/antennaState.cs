@@ -33,6 +33,7 @@ namespace WpfApp1
         private SerialPort readPort = null;
         TextBox text = null;
         public StartVoltage startVoltageObj = null;
+        public StartVoltageSector startVoltageObjSector = null;
 
         public antennaState() { }
         public antennaState(string azMeas, string incMeas)
@@ -44,6 +45,7 @@ namespace WpfApp1
             if (incMeas == "Значение") incMeasUni = true;
         }
         public void setStartVoltage(StartVoltage val) { this.startVoltageObj = val; }
+        public void setStartVoltageSector(StartVoltageSector val) { this.startVoltageObjSector = val; }
         public void SetAntennaAtPosition(int az, int inc)
         {
             int deltaAz = -(getAzAngle() - az);

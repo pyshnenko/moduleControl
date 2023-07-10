@@ -8,136 +8,38 @@ using System.Threading.Tasks;
 
 namespace WpfApp1
 {
-    internal class ForSave
+    public class ForSave
     {
-        public int progonSpeedAz;
-        public int progonSpeedInc;
-        public int creetAngleAzP;
-        public int creetAngleAzN;
-        public int creetAngleIncP;
-        public int creetAngleIncN;
-        public int speedK;
-        public int commandDelay;
-        public bool debug;
+        public int progonSpeedAz { get; set; }
+        public int progonSpeedInc { get; set; }
+        public int creetAngleAzP { get; set; }
+        public int creetAngleAzN { get; set; }
+        public int creetAngleIncP { get; set; }
+        public int creetAngleIncN { get; set; }
+        public int speedK { get; set; }
+        public int commandDelay { get; set; }
+        public bool debug { get; set; }
+        public bool readonlyP { get; set; }
         public bool correct = false;
 
-        public ForSave(
-            int progonSpeedAz,
-            int progonSpeedInc,
-            int creetAngleAzP,
-            int creetAngleAzN,
-            int creetAngleIncP,
-            int creetAngleIncN,
-            int speedK,
-            int commandDelay,
-            bool debug)
+        public bool unparseAndSave (string text)
         {
-            this.progonSpeedAz = progonSpeedAz;
-            this.progonSpeedInc = progonSpeedInc;
-            this.creetAngleIncP = creetAngleIncP;
-            this.creetAngleIncN = creetAngleIncN;
-            this.creetAngleAzP = creetAngleAzP;
-            this.creetAngleAzN = creetAngleAzN;
-            this.speedK = speedK;
-            this.commandDelay = commandDelay;
-            this.debug = debug;
-        }
-
-        private struct savedData
-        {
-            public int progonSpeedAz;
-            public int progonSpeedInc;
-            public int creetAngleAzP;
-            public int creetAngleAzN;
-            public int creetAngleIncP;
-            public int creetAngleIncN;
-            public int speedK;
-            public int commandDelay;
-            public bool debug;
-
-            public savedData(
-            int progonSpeedAz,
-            int progonSpeedInc,
-            int creetAngleAzP,
-            int creetAngleAzN,
-            int creetAngleIncP,
-            int creetAngleIncN,
-            int speedK,
-            int commandDelay,
-            bool debug)
+            ForSave readed = JsonSerializer.Deserialize<ForSave>(text);
+            if (readed != null)
             {
-                this.progonSpeedAz = progonSpeedAz;
-                this.progonSpeedInc = progonSpeedInc;
-                this.creetAngleIncP = creetAngleIncP;
-                this.creetAngleIncN = creetAngleIncN;
-                this.creetAngleAzP = creetAngleAzP;
-                this.creetAngleAzN = creetAngleAzN;
-                this.speedK = speedK;
-                this.commandDelay = commandDelay;
-                this.debug = debug;
+                progonSpeedAz = readed.progonSpeedAz;
+                progonSpeedInc = readed.progonSpeedInc;
+                creetAngleAzN = readed.creetAngleAzN;
+                creetAngleAzP = readed.creetAngleAzP;
+                creetAngleIncN = readed.creetAngleIncN; 
+                creetAngleIncP = readed.creetAngleIncP;
+                speedK = readed.speedK;
+                commandDelay = readed.commandDelay;
+                debug = readed.debug;
+                correct = true;
+                return true;
             }
-        }
-
-        public void unparseAndSave(string text)
-        {
-            savedData readJson;
-            try
-            {
-                readJson = JsonSerializer.Deserialize<savedData>(text);
-
-                if ((readJson.progonSpeedInc != 0) && (readJson.progonSpeedAz != 0)) this.correct = true;
-                else readJson = baseCreate();
-            }
-            catch
-            {
-                readJson = baseCreate();
-                this.correct = false;
-            }
-
-            this.progonSpeedAz = readJson.progonSpeedAz;
-            this.progonSpeedInc = readJson.progonSpeedInc;
-            this.creetAngleIncP = readJson.creetAngleIncP;
-            this.creetAngleIncN = readJson.creetAngleIncN;
-            this.creetAngleAzP = readJson.creetAngleAzP;
-            this.creetAngleAzN = readJson.creetAngleAzN;
-            this.speedK = readJson.speedK;
-            this.commandDelay = readJson.commandDelay;
-            this.debug = readJson.debug;
-        }
-
-        public string parsedString()
-        {
-            savedData sdata = new savedData
-            {
-                progonSpeedAz = progonSpeedAz,
-                progonSpeedInc = progonSpeedInc,
-                creetAngleIncP = creetAngleIncP,
-                creetAngleIncN = creetAngleIncN,
-                creetAngleAzP = creetAngleAzP,
-                creetAngleAzN = creetAngleAzN,
-                speedK = speedK,
-                commandDelay = commandDelay,
-                debug = debug
-            };
-
-            string data = JsonSerializer.Serialize(sdata);
-            return data;
-        }
-
-        private savedData baseCreate()
-        {
-            return new savedData
-            {
-                progonSpeedAz = 25,
-                progonSpeedInc = 25,
-                creetAngleIncP = 90,
-                creetAngleIncN = -90,
-                creetAngleAzP = 10,
-                creetAngleAzN = -30,
-                speedK = 158,
-                commandDelay = 2000,
-                debug = true
-            };
+            return false;
         }
     }
 }
