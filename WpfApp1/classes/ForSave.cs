@@ -36,6 +36,7 @@ namespace WpfApp1
                 speedK = readed.speedK;
                 commandDelay = readed.commandDelay;
                 debug = readed.debug;
+                readonlyP = readed.readonlyP;
                 correct = true;
                 return true;
             }

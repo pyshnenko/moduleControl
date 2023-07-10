@@ -54,6 +54,7 @@ namespace WpfApp1
                 else
                 {
                     int index = Array.IndexOf(workMode, working.name) + 1;
+                    if (index == 7) index = 6;
                     while (!mode[index]) index++;
                     exData.name = workMode[index];
                     exData.azimuth = working.azimuth;

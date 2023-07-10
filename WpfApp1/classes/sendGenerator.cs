@@ -74,6 +74,7 @@ namespace WpfApp1
             ushort i = 0, j = 0;
 
             byte[] rs485_buf_out = new byte[16] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            rs485_buf_out_ = rs485_buf_out;
 
             rs485_buf_out[0] = FL0D;
             rs485_buf_out[1] = FL0A;
@@ -114,7 +115,7 @@ namespace WpfApp1
             // set parity byte in message
             rs485_buf_out_[j - 1] = 0;
             for (i = 0; i < j - 1; i++)
-                rs485_buf_out_[j - 1] ^= rs485_buf_out_[i]; //parity byte;
+                rs485_buf_out_[j - 1] ^= rs485_buf_out[i]; //parity byte;
 
             if (rs485_buf_out_[j - 1] == FL0A)
             {

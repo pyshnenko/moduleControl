@@ -151,6 +151,11 @@ namespace WpfApp1.classes
                     else
                     {
                         work = state.GoToNextParameters();
+                        if (work.name != "naprTrogan")
+                        {
+                            end = true;
+                            return true;
+                        }
                         goToStart = true;
                         goToPluse = true;
                     }
@@ -182,7 +187,7 @@ namespace WpfApp1.classes
                     }
                     else
                     {
-                        //work = state.GoToNextParameters();
+                        work = state.GoToNextParameters();
                         goToStart = true;
                         end = true;
                         return true;

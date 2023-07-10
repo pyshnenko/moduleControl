@@ -421,7 +421,7 @@ namespace WpfApp1
                                 {
                                     println("Минимальная уставка по азимуту: " + state.startVoltageObj.minSpeedAz.ToString());
                                     println("Минимальная уставка по наклону: " + state.startVoltageObj.minSpeedInc.ToString());
-                                    state.GoToNextParameters();
+                                    //state.GoToNextParameters();
                                     ustAz.IsReadOnly = false;
                                     ustInc.IsReadOnly = false;
                                     ustAzBut.IsEnabled = true;
@@ -638,13 +638,13 @@ namespace WpfApp1
             BaseSettings.Show();
         }
 
-        private void println(string text, bool debug = false)
+        private void println(string text, bool debug = true)
         {
-            if (!debug) textFieldUpd(text + "\n");
+            if (debug) textFieldUpd(text + "\n");
         }
-        private void print(string text, bool debug = false)
+        private void print(string text, bool debug = true)
         {
-            if (!debug) textFieldUpd(text);
+            if (debug) textFieldUpd(text);
         }
 
         private void Update_ports(object sender, RoutedEventArgs e)
