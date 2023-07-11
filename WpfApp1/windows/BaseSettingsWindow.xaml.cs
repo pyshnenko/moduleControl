@@ -38,6 +38,8 @@ namespace WpfApp1
             commandDelay.Text = parameters.commandDelay.ToString();
             debug.IsChecked = parameters.debug;
             readonlyP.IsChecked = parameters.readonlyP;
+            creetUstAz.Text = parameters.creetUstAz.ToString();
+            creetUstInc.Text = parameters.creetUstInc.ToString();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -50,6 +52,8 @@ namespace WpfApp1
             pars.creetAngleIncN = int.Parse(creetAngleIncN.Text);
             pars.speedK = int.Parse(speedK.Text);
             pars.commandDelay = int.Parse(commandDelay.Text);
+            pars.creetUstAz = int.Parse(creetUstAz.Text);
+            pars.creetUstInc = int.Parse(creetUstInc.Text);
             pars.debug = (bool)debug.IsChecked;
             pars.readonlyP = (bool)readonlyP.IsChecked;
             string data = JsonSerializer.Serialize(pars);

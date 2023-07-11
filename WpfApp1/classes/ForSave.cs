@@ -17,6 +17,8 @@ namespace WpfApp1
         public int creetAngleIncP { get; set; }
         public int creetAngleIncN { get; set; }
         public int speedK { get; set; }
+        public int creetUstInc { get; set; }
+        public int creetUstAz { get; set; }
         public int commandDelay { get; set; }
         public bool debug { get; set; }
         public bool readonlyP { get; set; }
@@ -33,6 +35,8 @@ namespace WpfApp1
                 creetAngleAzP = readed.creetAngleAzP;
                 creetAngleIncN = readed.creetAngleIncN; 
                 creetAngleIncP = readed.creetAngleIncP;
+                creetUstAz = readed.creetUstAz;
+                creetUstInc = readed.creetUstInc;
                 speedK = readed.speedK;
                 commandDelay = readed.commandDelay;
                 debug = readed.debug;

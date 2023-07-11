@@ -6,11 +6,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
-        Title="Технические параметры" Height="640" Width="550">
+        Title="Технические параметры" Height="670" Width="550">
     <Grid>
         <WrapPanel Orientation="Vertical" HorizontalAlignment="Center">
             <WrapPanel Orientation="Vertical">
-                <GroupBox Margin="10" Header="Режим прогона">
+                <GroupBox Margin="10, 0" Header="Режим прогона">
                     <WrapPanel Orientation="Vertical">
                         <Grid Width="500">
                             <Label Margin="10" HorizontalAlignment="Left">Скорость прогона по азимуту</Label>
@@ -22,7 +22,7 @@
                         </Grid>
                     </WrapPanel>
                 </GroupBox>
-                <GroupBox Margin="10" Header="Углы прокачки">
+                <GroupBox Margin="10, 0" Header="Углы прокачки">
                     <WrapPanel Orientation="Vertical">
                         <Grid Width="500">
                             <Label Margin="10" HorizontalAlignment="Left">Допустимый угол прокачни по азимуту (+)</Label>
@@ -42,7 +42,7 @@
                         </Grid>
                     </WrapPanel>
                 </GroupBox>
-                <GroupBox Margin="10" Header="Параметры">
+                <GroupBox Header="Параметры" Margin="10, 0">
                     <WrapPanel Orientation="Vertical">
                         <Grid Width="500">
                             <Label Margin="10" HorizontalAlignment="Left">Коэффициент скорости</Label>
@@ -61,6 +61,18 @@
                                 <Label Margin="10">Заперт выдачи уставок</Label>
                                 <CheckBox VerticalAlignment="Center" x:Name="readonlyP" />
                             </WrapPanel>
+                        </WrapPanel>
+                    </WrapPanel>
+                </GroupBox>
+                <GroupBox Header="Предельная скорость" Margin="10, 0">
+                    <WrapPanel HorizontalAlignment="Center">
+                        <WrapPanel Orientation="Horizontal" Width="250">
+                            <Label>Азимут</Label>
+                            <TextBox Width="100" x:Name="creetUstAz"></TextBox>
+                        </WrapPanel>
+                        <WrapPanel Orientation="Horizontal">
+                            <Label>Наклон</Label>
+                            <TextBox Width="100" x:Name="creetUstInc"></TextBox>
                         </WrapPanel>
                     </WrapPanel>
                 </GroupBox>

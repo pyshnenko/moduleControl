@@ -53,6 +53,8 @@ namespace WpfApp1
             creetAngleAzN = -90,
             creetAngleIncP = 10,
             creetAngleIncN = -30,
+            creetUstAz = 50,
+            creetUstInc = 50,
             speedK = 158,
             commandDelay = 2000,
             debug = true,
@@ -309,10 +311,10 @@ namespace WpfApp1
                 {
                     int az = (state.getManualAzAngle() - state.getAzAngle()) / antennaParameters.speedK;
                     int inc = (state.getManualIncAngle() - state.getIncAngle()) / antennaParameters.speedK;
-                    if (az > 1024) az = 1024;
-                    if (inc > 1024) inc = 1024;
-                    if (az < -1024) az = -1024;
-                    if (inc < -1024) inc = -1024;
+                    if (az > antennaParameters.creetUstAz) az = antennaParameters.creetUstAz;
+                    if (inc > antennaParameters.creetUstInc) inc = antennaParameters.creetUstInc;
+                    if (az < -antennaParameters.creetUstAz) az = -antennaParameters.creetUstAz;
+                    if (inc < -antennaParameters.creetUstInc) inc = -antennaParameters.creetUstInc;
                     print(az.ToString() + "   ");
                     println(inc.ToString());
                     sendGenerator.Pa30_data sendData = new sendGenerator.Pa30_data(az, inc, 11, 10);
@@ -326,10 +328,10 @@ namespace WpfApp1
                         case "zero":
                             int az = (-state.getAzAngle()) / antennaParameters.speedK;
                             int inc = (-state.getIncAngle()) / antennaParameters.speedK;
-                            if (az > 1024) az = 1024;
-                            if (inc > 1024) inc = 1024;
-                            if (az < -1024) az = -1024;
-                            if (inc < -1024) inc = -1024;
+                            if (az > antennaParameters.creetUstAz) az = antennaParameters.creetUstAz;
+                            if (inc > antennaParameters.creetUstInc) inc = antennaParameters.creetUstInc;
+                            if (az < -antennaParameters.creetUstAz) az = -antennaParameters.creetUstAz;
+                            if (inc < -antennaParameters.creetUstInc) inc = -antennaParameters.creetUstInc;
                             state.setUstAz(az);
                             state.setUstInc(inc);
                             if (check_start.Content.ToString() == "Стоп") check_start.Content = "Проверка";
@@ -404,7 +406,9 @@ namespace WpfApp1
                                     antennaParameters.creetAngleAzN,
                                     antennaParameters.creetAngleIncP,
                                     antennaParameters.creetAngleIncN,
-                                    antennaParameters.speedK));
+                                    antennaParameters.speedK,
+                                    antennaParameters.creetUstAz,
+                                    antennaParameters.creetUstInc));
                                 state.startVoltageObj.StartCheck();
                             }
                             else if (!state.startVoltageObj.ready)
@@ -447,7 +451,9 @@ namespace WpfApp1
                                         antennaParameters.creetAngleAzN,
                                         antennaParameters.creetAngleIncP,
                                         antennaParameters.creetAngleIncN,
-                                        antennaParameters.speedK));
+                                        antennaParameters.speedK,
+                                        antennaParameters.creetUstAz,
+                                        antennaParameters.creetUstInc));
                                     state.startVoltageObjSector.StartCheck();
                                 }
                                 else if (!state.startVoltageObjSector.ready)
@@ -488,7 +494,7 @@ namespace WpfApp1
                         state.getUstAz(),
                         state.getUstInc(),
                         00,
-                        (ushort)0x0800);//(ushort)(antennaParameters.commandDelay > 500 ? 50000 : (antennaParameters.commandDelay *100)));
+                        (ushort)(antennaParameters.commandDelay > 500 ? 50000 : (antennaParameters.commandDelay * 200)));
                     if (!antennaParameters.readonlyP) protocol.pa30_pack(sendData);
                     protocol.askToRead();
                 }
@@ -499,7 +505,8 @@ namespace WpfApp1
             CheckedParameters.NowWork work = new CheckedParameters.NowWork("other", true);
             state.setWorkMode(work);
             int data = Int32.Parse(ustAz.Text);
-            if (data > 1024) data = 1024;
+            if (data > antennaParameters.creetUstAz) data = antennaParameters.creetUstAz;
+            else if (data < -antennaParameters.creetUstAz) data = -antennaParameters.creetUstAz;
             state.setUstAz(data);
         }
 
@@ -508,7 +515,8 @@ namespace WpfApp1
             CheckedParameters.NowWork work = new CheckedParameters.NowWork("other", true);
             state.setWorkMode(work);
             int data = Int32.Parse(ustInc.Text);
-            if (data > 1024) data = 1024;
+            if (data > antennaParameters.creetUstInc) data = antennaParameters.creetUstInc;
+            else if (data < -antennaParameters.creetUstInc) data = -antennaParameters.creetUstInc;
             state.setUstInc(data);
         }
 
