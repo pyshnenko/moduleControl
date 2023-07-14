@@ -21,6 +21,8 @@ namespace WpfApp1
         private SerialPort portW = null;
         private SerialPort portR = null;
 
+        private ForSave pars;
+
         public struct Pa30_data
         {
             public int del_g;
@@ -63,6 +65,8 @@ namespace WpfApp1
             }
         }
 
+        public void setCreetPars(ForSave pars) { this.pars = pars; }
+
         public void setPortW(SerialPort portW, SerialPort portR)
         {
             this.portW = portW;
@@ -84,6 +88,8 @@ namespace WpfApp1
 
             //	pa30_data.del_g = 8;
             //	pa30_data.del_v = 8;
+            if (pa30_data.del_v>10) 
+                pa30_data.del_v = 10;
             rs485_buf_out[5] = pa30_data.del_g < 0 ? (byte)0x80 : (byte)0x00;
             rs485_buf_out[5] += (byte)(((ushort)(Math.Abs(pa30_data.del_g)) & 0xff00) >> 8);
             rs485_buf_out[6] = (byte)((ushort)(Math.Abs(pa30_data.del_g)) & 0x00ff);
@@ -159,11 +165,18 @@ namespace WpfApp1
                 int az = (int)(data[5] & 0x7f) << 8;
                 az += data[6];
                 if ((data[5] & 0x80) != 0) az *= (-1);
-                az *= 40;
+                az = (int)(az * 10.79351391263597);
+                if (az < 0)
+                    az = -(353661 + az);//39.553164866));
+                //if (az < 0) az = -(102 * 3600 +2084 + az);
                 int inc = (int)(data[7] & 0x7f) << 8;
                 inc += data[8];
-                inc *= 40;
                 if ((data[7] & 0x80) != 0) inc *= (-1);
+                inc = (int)(inc * 10.79351391263597);
+                if (inc < 0)
+                    inc = -(353661 + inc);
+                /*inc = (int)(inc * 11.27);
+                if (inc < 0) inc = -(103 * 3600 + inc);*/
                 InpData rData = new InpData(
                     az,
                     inc, 

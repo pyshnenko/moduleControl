@@ -40,6 +40,8 @@ namespace WpfApp1
             readonlyP.IsChecked = parameters.readonlyP;
             creetUstAz.Text = parameters.creetUstAz.ToString();
             creetUstInc.Text = parameters.creetUstInc.ToString();
+            startSpeedAz.Text = parameters.addUstAz.ToString();
+            startSpeedInc.Text = parameters.addUstInc.ToString();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -56,6 +58,8 @@ namespace WpfApp1
             pars.creetUstInc = int.Parse(creetUstInc.Text);
             pars.debug = (bool)debug.IsChecked;
             pars.readonlyP = (bool)readonlyP.IsChecked;
+            pars.addUstAz = int.Parse(startSpeedAz.Text);
+            pars.addUstInc = int.Parse(startSpeedInc.Text);
             string data = JsonSerializer.Serialize(pars);
             File.WriteAllText("settings.cfg", data);
             Close();

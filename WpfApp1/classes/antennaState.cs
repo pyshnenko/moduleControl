@@ -13,7 +13,7 @@ namespace WpfApp1
     public class antennaState
     {
         private bool connectState = false;
-        private int azAngle = 324123;
+        private int azAngle = 0;
         private int incAngle = 0;
         private bool azMeasUni = false;
         private bool incMeasUni = false;
@@ -29,6 +29,8 @@ namespace WpfApp1
         private int needIncAngle = 0;
         private long lastAzTime = 0;
         private long lastIncTime = 0;
+        public int azSpeed = 0;
+        public int incSpeed = 0;
         private CheckedParameters pars;
         private SerialPort readPort = null;
         TextBox text = null;
@@ -135,6 +137,7 @@ namespace WpfApp1
 
         public void setAzAngle (string angle, int angleInt)
         {
+            int lastAngle = azAngle;
             if (angle == "")
                 azAngle = angleInt;
             else
@@ -146,6 +149,9 @@ namespace WpfApp1
                 }
                 azAngle = buf;
             }
+            long nowTimes = DateTime.Now.Ticks;
+            azSpeed = (int)(Math.Abs(lastAngle - azAngle)*1000/(nowTimes - lastAzTime));
+            lastAzTime = nowTimes;
         }
 
         public int getAzAngle ()
@@ -160,6 +166,7 @@ namespace WpfApp1
 
         public void setIncAngle(string angle, int angleInt)
         {
+            int lastAngle = incAngle;
             if (angle == "")
                 incAngle = angleInt;
             else
@@ -171,6 +178,9 @@ namespace WpfApp1
                 }
                 incAngle = buf;
             }
+            long nowTimes = DateTime.Now.Ticks;
+            incSpeed = (int)(Math.Abs(lastAngle - incAngle) * 1000 / (nowTimes - lastIncTime));
+            lastIncTime = nowTimes;
         }
 
         public int getIncAngle ()
@@ -213,10 +223,10 @@ namespace WpfApp1
 
         private string intToAng (int angle)
         {
-            int extGrad = (int)(angle/3600);
+            int extGrad = (int)(Math.Abs(angle)/ 3600);
             int extMin = (int)((Math.Abs(angle))%3600 / 60);
             int extSeck = (int)((Math.Abs(angle)) % 60);
-            return extGrad + "º" + extMin + "'" + extSeck + "\"";
+            return (angle<0? "-":"") + extGrad + "º" + extMin + "'" + extSeck + "\"";
         }
     }
 }

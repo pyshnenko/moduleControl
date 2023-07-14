@@ -59,7 +59,9 @@ namespace WpfApp1
             commandDelay = 2000,
             debug = true,
             correct = false,
-            readonlyP = true
+            readonlyP = true,
+            addUstAz = 0,
+            addUstInc = 0
         };
         readonly sendGenerator protocol = new sendGenerator();
 
@@ -86,6 +88,7 @@ namespace WpfApp1
             state.setTextBox(textField);
             manualAzAngle.Text = "0";
             manualIncAngle.Text = "0";
+            protocol.setCreetPars(antennaParameters);
             state.setWorkMode(new CheckedParameters.NowWork("zero", true));
             bool fileExist = File.Exists("settings.cfg");
             if (fileExist) 
@@ -287,14 +290,14 @@ namespace WpfApp1
                 inpData = protocol.readData(data);
                 if (inpData.correct)
                 {
-                    long time = DateTime.Now.Ticks;
+                    /*long time = DateTime.Now.Ticks;
                     if ((state.getLastAzTime() != 0) && antennaParameters.debug) println("az speed: " + ((int)((state.getAzAngle() - inpData.angle_a) * 1000 / (time - state.getLastAzTime()))).ToString());
-                    state.setLastAzTime(time);
+                    state.setLastAzTime(time);*/
                     state.setAzAngle("", inpData.angle_a);
                     azTextBox.Text = state.getAzAngleText();
 
-                    if ((state.getLastIncTime() != 0) && antennaParameters.debug) println("inc speed: " + ((int)((state.getIncAngle() - inpData.angle_n) * 1000 / (time - state.getLastIncTime()))).ToString());
-                    state.setLastIncTime(time);
+                    /*if ((state.getLastIncTime() != 0) && antennaParameters.debug) println("inc speed: " + ((int)((state.getIncAngle() - inpData.angle_n) * 1000 / (time - state.getLastIncTime()))).ToString());
+                    state.setLastIncTime(time);*/
                     state.setIncAngle("", inpData.angle_n);
                     incTextBox.Text = state.getIncAngleText();
 
@@ -306,6 +309,7 @@ namespace WpfApp1
         {
             Dispatcher.Invoke((Action)(() =>
             {
+                if (aTimer.Interval != antennaParameters.commandDelay) aTimer.Interval = antennaParameters.commandDelay;
                 if (state.GetCheckedParameters() != null) check_start.IsEnabled = true;
                 if (state.getManualState())
                 {
@@ -332,8 +336,8 @@ namespace WpfApp1
                             if (inc > antennaParameters.creetUstInc) inc = antennaParameters.creetUstInc;
                             if (az < -antennaParameters.creetUstAz) az = -antennaParameters.creetUstAz;
                             if (inc < -antennaParameters.creetUstInc) inc = -antennaParameters.creetUstInc;
-                            state.setUstAz(az);
-                            state.setUstInc(inc);
+                            state.setUstAz((state.azSpeed == 0 && az != 0) ? az + antennaParameters.addUstAz : az);
+                            state.setUstInc(state.incSpeed == 0 && az != 0 ? inc + antennaParameters.addUstInc : inc);
                             if (check_start.Content.ToString() == "Стоп") check_start.Content = "Проверка";
                             if (!progon.IsEnabled) progon.IsEnabled = true;
                             break;
@@ -355,12 +359,18 @@ namespace WpfApp1
                             }
                             if (state.getNeedAzAngle()<0) 
                             {
-                                if (state.getAzAngle() < (antennaParameters.creetAngleAzN + 5)*3600)
+                                if (state.getAzAngle() < (antennaParameters.creetAngleAzN + 5) * 3600)
                                 {
                                     state.setNeedAzAngle(antennaParameters.creetAngleAzP * 3600);
                                     state.setUstAz(0);
                                 }
-                                else state.setUstAz(-prRealSpeedAz);
+                                else
+                                {
+                                    int ust = Math.Abs(state.getUstAz());
+                                    if (state.azSpeed < prRealSpeedAz) { ust++; }
+                                    else if (state.azSpeed > prRealSpeedAz) { ust = Math.Abs(ust-1); }
+                                    state.setUstAz(-ust);
+                                }
                             }
                             else
                             {
@@ -369,7 +379,13 @@ namespace WpfApp1
                                     state.setNeedAzAngle(antennaParameters.creetAngleAzN * 3600);
                                     state.setUstAz(0);
                                 }
-                                else state.setUstAz(prRealSpeedAz);
+                                else
+                                {
+                                    int ust = Math.Abs(state.getUstAz());
+                                    if (state.azSpeed < prRealSpeedAz) { ust++; }
+                                    else if (state.azSpeed > prRealSpeedAz) { ust = Math.Abs(ust-1); }
+                                    state.setUstAz(ust);
+                                }
                             }
                             if (state.getNeedIncAngle() < 0)
                             {
@@ -378,7 +394,13 @@ namespace WpfApp1
                                     state.setNeedIncAngle(antennaParameters.creetAngleIncP * 3600);
                                     state.setUstInc(0);
                                 }
-                                else state.setUstInc(-prRealSpeedInc);
+                                else
+                                {
+                                    int ust = Math.Abs(state.getUstInc());
+                                    if (state.incSpeed < prRealSpeedInc) { ust++; }
+                                    else if (state.incSpeed > prRealSpeedInc) { ust = Math.Abs(ust - 1); }
+                                    state.setUstInc(-ust);
+                                }
                             }
                             else
                             {
@@ -387,7 +409,13 @@ namespace WpfApp1
                                     state.setNeedIncAngle(antennaParameters.creetAngleIncN * 3600);
                                     state.setUstInc(0);
                                 }
-                                else state.setUstInc(prRealSpeedInc);
+                                else
+                                {
+                                    int ust = Math.Abs(state.getUstInc());
+                                    if (state.incSpeed < prRealSpeedInc) { ust++; }
+                                    else if (state.incSpeed > prRealSpeedInc) { ust = Math.Abs(ust-1); }
+                                    state.setUstInc(ust);
+                                }
                             }
                             ustAz.Text = state.getUstAz().ToString();
                             ustInc.Text = state.getUstInc().ToString();
@@ -488,15 +516,16 @@ namespace WpfApp1
                                 break;
                             }
                     }
-                    print(state.getUstAz().ToString() + "   ", antennaParameters.debug);
-                    println(state.getUstInc().ToString(), antennaParameters.debug);
+                    print(state.getUstAz().ToString() + "   " + state.azSpeed.ToString() + ";  ", antennaParameters.debug);
+                    println(state.getUstInc().ToString() + "   " + state.incSpeed.ToString(), antennaParameters.debug);
                     sendGenerator.Pa30_data sendData = new sendGenerator.Pa30_data(
                         state.getUstAz(),
                         state.getUstInc(),
                         00,
-                        (ushort)(antennaParameters.commandDelay > 500 ? 50000 : (antennaParameters.commandDelay * 200)));
+                        (ushort)(antennaParameters.commandDelay > 500 ? 50000 : (antennaParameters.commandDelay * 200)));//0x0800);//
                     if (!antennaParameters.readonlyP) protocol.pa30_pack(sendData);
-                    protocol.askToRead();
+                    //Thread.Sleep(50);
+                    //if (antennaParameters.readonlyP) protocol.askToRead();
                 }
             }));
         }
@@ -558,8 +587,8 @@ namespace WpfApp1
         private void Button_Click_5(object sender, RoutedEventArgs e)
         {
             progon.Content = state.getWorkMode().name == "progon" ? "Прогон" : "Стоп" ;
-            ustAz.IsReadOnly = state.getWorkMode().name == "progon";
-            ustInc.IsReadOnly = state.getWorkMode().name == "progon";
+            ustAz.IsReadOnly = state.getWorkMode().name != "progon";
+            ustInc.IsReadOnly = state.getWorkMode().name != "progon";
             CheckedParameters.NowWork work = new CheckedParameters.NowWork(state.getWorkMode().name == "progon" ? "zero" : "progon", true);
             state.setWorkMode(work);
             if (state.getWorkMode().name == "progon")

@@ -23,6 +23,8 @@ namespace WpfApp1
         public bool debug { get; set; }
         public bool readonlyP { get; set; }
         public bool correct = false;
+        public int addUstAz { get; set; }
+        public int addUstInc { get; set; }
 
         public bool unparseAndSave (string text)
         {
@@ -41,6 +43,8 @@ namespace WpfApp1
                 commandDelay = readed.commandDelay;
                 debug = readed.debug;
                 readonlyP = readed.readonlyP;
+                addUstAz = readed.addUstAz;
+                addUstInc = readed.addUstInc;
                 correct = true;
                 return true;
             }

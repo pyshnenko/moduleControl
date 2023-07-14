@@ -64,15 +64,27 @@
                         </WrapPanel>
                     </WrapPanel>
                 </GroupBox>
-                <GroupBox Header="Предельная скорость" Margin="10, 0">
-                    <WrapPanel HorizontalAlignment="Center">
-                        <WrapPanel Orientation="Horizontal" Width="250">
-                            <Label>Азимут</Label>
-                            <TextBox Width="100" x:Name="creetUstAz"></TextBox>
+                <GroupBox Header="Предельная скорость" Margin="10, 0" Width="530">
+                    <WrapPanel Orientation="Vertical" HorizontalAlignment="Center" Width="510">
+                        <WrapPanel HorizontalAlignment="Center" Width="510">
+                            <WrapPanel Orientation="Horizontal" Width="250">
+                                <Label Width="79">Азимут</Label>
+                                <TextBox Width="100" x:Name="creetUstAz"></TextBox>
+                            </WrapPanel>
+                            <WrapPanel Orientation="Horizontal">
+                                <Label Width="79">Наклон</Label>
+                                <TextBox Width="100" x:Name="creetUstInc"></TextBox>
+                            </WrapPanel>
                         </WrapPanel>
-                        <WrapPanel Orientation="Horizontal">
-                            <Label>Наклон</Label>
-                            <TextBox Width="100" x:Name="creetUstInc"></TextBox>
+                        <WrapPanel HorizontalAlignment="Center" Width="510">
+                            <WrapPanel Orientation="Horizontal" Width="250">
+                                <Label>Добавочное</Label>
+                                <TextBox Width="100" x:Name="startSpeedAz"></TextBox>
+                            </WrapPanel>
+                            <WrapPanel Orientation="Horizontal">
+                                <Label>Добавочное</Label>
+                                <TextBox Width="100" x:Name="startSpeedInc"></TextBox>
+                            </WrapPanel>
                         </WrapPanel>
                     </WrapPanel>
                 </GroupBox>
