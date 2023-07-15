@@ -93,5 +93,9 @@
         <Button Height="25" Width="100" Click="Clear_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="280, 20" >Очистить</Button>
         <Button Height="25" Width="100" Click="Button_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="150, 20" >Тест</Button>
         <Button Height="25" Width="100" Click="Exit_Click" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="20" >Закрыть</Button>
+        <Frame x:Name="frame" Width="100" Height="100" Background="White" Visibility="Hidden">
+            
+        </Frame>
     </Grid>
+    
 </Window>

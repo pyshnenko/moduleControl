@@ -107,6 +107,21 @@ namespace WpfApp1
                 string data = JsonSerializer.Serialize(antennaParameters);
                 File.WriteAllText("settings.cfg", data);
             }
+            System.Timers.Timer updPortTimer = new System.Timers.Timer();
+            updPortTimer.Elapsed += updPort;
+            updPortTimer.AutoReset = false;
+            updPortTimer.Interval = 100;
+            updPortTimer.Enabled = true;
+            frame.Visibility = Visibility.Visible;
+        }
+
+        private void updPort(Object source, System.Timers.ElapsedEventArgs e)
+        {
+            Dispatcher.Invoke((Action)(() =>
+            {
+                Update_ports_func();
+                frame.Visibility = Visibility.Hidden;
+            }));
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
